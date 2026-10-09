@@ -378,15 +378,22 @@ with tab6:
     st.markdown("---")
 
     # 5. Dual Display: Speedometer Radial Gauge + Solid High-Contrast Banner
-    gauge_col, banner_col = st.columns([1, 1.3])
+    gauge_col, banner_col = st.columns([1, 1.2])
 
     with gauge_col:
         import plotly.graph_objects as go
         fig_gauge = go.Figure(go.Indicator(
             mode="gauge+number",
             value=hazard_score,
-            domain={'x': [0.08, 0.92], 'y': [0.10, 0.92]},
-            title={'text': "<b>THERMAL HAZARD INDEX</b><br><span style='font-size:0.8em;color:#64748B'>Risk Scale (0 to 100)</span>", 'font': {'size': 15, 'color': '#0F172A'}},
+            number={
+                'font': {'size': 44, 'color': '#FFFFFF', 'family': 'sans-serif'},
+                'valueformat': '.0f'
+            },
+            domain={'x': [0.08, 0.92], 'y': [0.12, 0.88]},
+            title={
+                'text': "<b>THERMAL HAZARD INDEX</b><br><span style='font-size:0.80em;color:#94A3B8'>Dynamic AI Risk Score (0 to 100)</span>",
+                'font': {'size': 15, 'color': '#FFFFFF', 'family': 'sans-serif'}
+            },
             gauge={
                 'axis': {
                     'range': [0, 100],
@@ -394,44 +401,55 @@ with tab6:
                     'tickvals': [0, 20, 40, 60, 80, 100],
                     'ticktext': ['0', '20', '40', '60', '80', '100'],
                     'tickwidth': 2,
-                    'tickcolor': "#334155",
-                    'tickfont': {'size': 14, 'color': '#0F172A', 'family': 'sans-serif'}
+                    'tickcolor': "#94A3B8",
+                    'tickfont': {'size': 13, 'color': '#E2E8F0', 'family': 'sans-serif'}
                 },
-                'bar': {'color': gauge_bar_color, 'thickness': 0.30},
-                'bgcolor': "white",
+                'bar': {'color': gauge_bar_color, 'thickness': 0.32},
+                'bgcolor': "#1E293B",
                 'borderwidth': 2,
-                'bordercolor': "#CBD5E1",
+                'bordercolor': "#475569",
                 'steps': [
-                    {'range': [0, 40], 'color': '#DCFCE7'},
-                    {'range': [40, 60], 'color': '#FEF9C3'},
-                    {'range': [60, 80], 'color': '#FFEDD5'},
-                    {'range': [80, 100], 'color': '#FEE2E2'}
+                    {'range': [0, 40], 'color': '#064E3B'},
+                    {'range': [40, 60], 'color': '#713F12'},
+                    {'range': [60, 80], 'color': '#7C2D12'},
+                    {'range': [80, 100], 'color': '#7F1D1D'}
                 ],
                 'threshold': {
-                    'line': {'color': "#DC2626", 'width': 4},
+                    'line': {'color': "#EF4444", 'width': 4},
                     'thickness': 0.75,
                     'value': 80
                 }
             }
         ))
-        fig_gauge.update_layout(height=330, margin=dict(l=35, r=35, t=55, b=35))
-        st.plotly_chart(fig_gauge, use_container_width=True)
+        fig_gauge.update_layout(
+            paper_bgcolor="#0F172A",
+            plot_bgcolor="#0F172A",
+            height=320,
+            margin=dict(l=35, r=35, t=55, b=25)
+        )
+        st.plotly_chart(fig_gauge, use_container_width=True, theme=None, config={'displayModeBar': False})
 
     with banner_col:
         alert_html = f"""
-        <div style="background-color: {card_bg}; border: 3px solid {border_color}; border-radius: 12px; padding: 1.4rem; box-shadow: 0 4px 15px rgba(0,0,0,0.25); height: 100%;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <span style="font-size: 0.85rem; font-weight: 700; color: #FFFFFF; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.9;">IMD AI Early Warning Protocol</span>
-                    <h2 style="margin: 0.2rem 0; color: #FFFFFF !important; font-size: 1.7rem; font-weight: 800;">{tier_emoji} {tier_name}</h2>
-                    <div style="color: #F8FAFC; font-weight: 600; font-size: 1.05rem;">{tier_title}</div>
+        <div style="background-color: {card_bg}; border: 2px solid {border_color}; border-radius: 12px; padding: 1.2rem 1.4rem; box-shadow: 0 4px 15px rgba(0,0,0,0.25); height: 320px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+            <div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <span style="font-size: 0.85rem; font-weight: 700; color: #FFFFFF; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.9;">IMD AI Early Warning Protocol</span>
+                        <h2 style="margin: 0.2rem 0; color: #FFFFFF !important; font-size: 1.7rem; font-weight: 800;">{tier_emoji} {tier_name}</h2>
+                        <div style="color: #F8FAFC; font-weight: 600; font-size: 1.05rem;">{tier_title}</div>
+                    </div>
+                    <div style="font-size: 2.8rem;">{tier_emoji}</div>
                 </div>
-                <div style="font-size: 2.8rem;">{tier_emoji}</div>
+                <div style="background: rgba(0, 0, 0, 0.35); border-left: 4px solid #FFFFFF; border-radius: 6px; padding: 0.8rem 1rem; margin-top: 1rem;">
+                    <p style="margin: 0; color: #FFFFFF !important; font-size: 0.95rem; line-height: 1.5;">
+                        <strong style="color: #FFFFFF;">Statistical Rationale:</strong> {rationale}
+                    </p>
+                </div>
             </div>
-            <div style="background: rgba(0, 0, 0, 0.35); border-left: 4px solid #FFFFFF; border-radius: 6px; padding: 0.8rem 1rem; margin-top: 1rem;">
-                <p style="margin: 0; color: #FFFFFF !important; font-size: 0.98rem; line-height: 1.5;">
-                    <strong style="color: #FFFFFF;">Statistical Rationale:</strong> {rationale}
-                </p>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 0.6rem; margin-top: 0.6rem;">
+                <span style="font-size: 0.82rem; color: #E2E8F0;">Active Zone: <strong>{microclimate.split('(')[0].strip()}</strong></span>
+                <span style="font-size: 0.82rem; color: #E2E8F0;">Heat Index: <strong>{sim_heat_index:.1f}°C</strong></span>
             </div>
         </div>
         """
@@ -446,34 +464,34 @@ with tab6:
     imp1, imp2, imp3, imp4 = st.columns(4)
     with imp1:
         st.markdown(f"""
-        <div style="background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 10px; padding: 1rem; border-left: 5px solid #2563EB; min-height: 120px;">
-            <div style="font-size: 0.8rem; font-weight: 700; color: #64748B; text-transform: uppercase;">🌡️ Effective Temp</div>
-            <div style="font-size: 1.8rem; font-weight: 800; color: #0F172A; margin: 0.2rem 0;">{effective_temp:.1f} °C</div>
-            <div style="font-size: 0.85rem; color: #475569;">Heat Index: <strong>{sim_heat_index:.1f} °C</strong></div>
+        <div style="background: #0F172A; border: 1px solid #334155; border-radius: 10px; padding: 1.1rem; border-left: 5px solid #2563EB; min-height: 125px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">🌡️ Effective Temp</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #FFFFFF; margin: 0.2rem 0;">{effective_temp:.1f} °C</div>
+            <div style="font-size: 0.85rem; color: #CBD5E1;">Heat Index: <strong style="color: #60A5FA;">{sim_heat_index:.1f} °C</strong></div>
         </div>
         """, unsafe_allow_html=True)
     with imp2:
         st.markdown(f"""
-        <div style="background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 10px; padding: 1rem; border-left: 5px solid #DC2626; min-height: 120px;">
-            <div style="font-size: 0.8rem; font-weight: 700; color: #64748B; text-transform: uppercase;">🏥 Hospital Triage</div>
-            <div style="font-size: 1.8rem; font-weight: 800; color: #0F172A; margin: 0.2rem 0;">{hosp_val}</div>
-            <div style="font-size: 0.85rem; color: #475569;">{hosp_desc}</div>
+        <div style="background: #0F172A; border: 1px solid #334155; border-radius: 10px; padding: 1.1rem; border-left: 5px solid #EF4444; min-height: 125px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">🏥 Hospital Triage</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #FFFFFF; margin: 0.2rem 0;">{hosp_val}</div>
+            <div style="font-size: 0.85rem; color: #CBD5E1;">{hosp_desc}</div>
         </div>
         """, unsafe_allow_html=True)
     with imp3:
         st.markdown(f"""
-        <div style="background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 10px; padding: 1rem; border-left: 5px solid #0284C7; min-height: 120px;">
-            <div style="font-size: 0.8rem; font-weight: 700; color: #64748B; text-transform: uppercase;">💧 Water Tankers</div>
-            <div style="font-size: 1.8rem; font-weight: 800; color: #0F172A; margin: 0.2rem 0;">{water_val}</div>
-            <div style="font-size: 0.85rem; color: #475569;">{water_desc}</div>
+        <div style="background: #0F172A; border: 1px solid #334155; border-radius: 10px; padding: 1.1rem; border-left: 5px solid #0284C7; min-height: 125px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">💧 Water Tankers</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #FFFFFF; margin: 0.2rem 0;">{water_val}</div>
+            <div style="font-size: 0.85rem; color: #CBD5E1;">{water_desc}</div>
         </div>
         """, unsafe_allow_html=True)
     with imp4:
         st.markdown(f"""
-        <div style="background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 10px; padding: 1rem; border-left: 5px solid #D97706; min-height: 120px;">
-            <div style="font-size: 0.8rem; font-weight: 700; color: #64748B; text-transform: uppercase;">⚡ Power Grid Load</div>
-            <div style="font-size: 1.8rem; font-weight: 800; color: #0F172A; margin: 0.2rem 0;">{power_val}</div>
-            <div style="font-size: 0.85rem; color: #475569;">{power_desc}</div>
+        <div style="background: #0F172A; border: 1px solid #334155; border-radius: 10px; padding: 1.1rem; border-left: 5px solid #F59E0B; min-height: 125px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">⚡ Power Grid Load</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #FFFFFF; margin: 0.2rem 0;">{power_val}</div>
+            <div style="font-size: 0.85rem; color: #CBD5E1;">{power_desc}</div>
         </div>
         """, unsafe_allow_html=True)
 
