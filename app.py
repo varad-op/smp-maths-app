@@ -245,23 +245,25 @@ with tab6:
                + 0.00085282*tf*sim_rh*sim_rh - 0.00000199*tf*tf*sim_rh*sim_rh)
     sim_heat_index = round((hif - 32) * 5/9, 1)
 
-    # Calculate Normal Distribution Exceedance Probability for the simulated temp
-    mu_temp = df['Max_Temp_C'].mean()
-    sigma_temp = df['Max_Temp_C'].std()
-    z_sim = (sim_temp - mu_temp) / sigma_temp
+    # Calculate Normal Distribution Tail Risk P(X >= 40°C) under fitted Gaussian model
+    mu_temp = float(df['Max_Temp_C'].mean())
+    sigma_temp = float(df['Max_Temp_C'].std())
+    z_40 = (40.0 - mu_temp) / sigma_temp
     
     # Standard normal CDF approximation using error function
     import math
-    prob_exceed = 1.0 - (0.5 * (1.0 + math.erf(z_sim / math.sqrt(2.0))))
-    prob_exceed_pct = max(0.0, min(100.0, prob_exceed * 100.0))
+    prob_exceed_40 = 1.0 - (0.5 * (1.0 + math.erf(z_40 / math.sqrt(2.0))))
+    prob_exceed_40_pct = prob_exceed_40 * 100.0
 
     # 2. Multi-Tier AI Decision Matrix (IMD & NDMA Guidelines)
-    if sim_temp >= 42.0 or sim_heat_index >= 52.0 or prob_exceed_pct >= 35.0:
+    # Clear, responsive thresholds based on air temperature and heat index:
+    if sim_temp >= 42.5 or (sim_temp >= 41.0 and sim_heat_index >= 55.0):
         tier_name = "RED ALERT"
         tier_title = "Severe Heatwave Warning (Extreme Emergency Action)"
-        tier_color = "#DC2626"
+        card_bg = "#7F1D1D"        # Deep Crimson Red
+        border_color = "#EF4444"   # Bright Red Border
         tier_emoji = "🔴"
-        rationale = f"Extreme thermal danger detected! Temperature ({sim_temp:.1f}°C) or Heat Index ({sim_heat_index:.1f}°C) creates severe physiological risk of heatstroke."
+        rationale = f"Severe thermal emergency! Temperature ({sim_temp:.1f}°C) or Heat Index ({sim_heat_index:.1f}°C) poses fatal heatstroke risk even during light activity."
         directives = [
             "🚨 Immediate red alert broadcast via municipal disaster channels.",
             "🏥 Hospital Emergency Protocol: Activate dedicated air-conditioned heatstroke ICU wards.",
@@ -269,24 +271,26 @@ with tab6:
             "💧 Water Utilities: Pre-position high-capacity water tankers in vulnerable informal settlements.",
             "⚡ Power Grid Management: Ramp up grid spinning reserves to prevent transformer burnout under peak AC cooling loads."
         ]
-    elif sim_temp >= 40.0 or sim_heat_index >= 45.0 or prob_exceed_pct >= 20.0:
+    elif sim_temp >= 40.0 or (sim_temp >= 39.0 and sim_heat_index >= 50.0):
         tier_name = "ORANGE ALERT"
         tier_title = "Heatwave Alert (Severe Action Required)"
-        tier_color = "#EA580C"
+        card_bg = "#7C2D12"        # Deep Rust Orange
+        border_color = "#F97316"   # Bright Orange Border
         tier_emoji = "🟠"
-        rationale = f"High persistence conditions. Temperature ({sim_temp:.1f}°C) and Exceedance Probability ({prob_exceed_pct:.1f}%) indicate sustained heat danger."
+        rationale = f"Heatwave conditions active. Temperature ({sim_temp:.1f}°C) breaches the official IMD 40°C threshold. Vulnerable demographics at serious risk."
         directives = [
             "⚠️ Issue Orange Alert for high-risk demographics (infants, elderly, chronic illness patients).",
             "🏥 Hospitals: Stock emergency reserves of ORS packets, IV fluids, and ice packs.",
             "🕒 Primary schools adjust afternoon timings; end all outdoor physical classes by 11:00 AM.",
             "💧 Set up public drinking water kiosks ('Pyaaos') at railway stations and transit hubs."
         ]
-    elif sim_temp >= 38.0 or sim_heat_index >= 40.0:
+    elif sim_temp >= 38.0:
         tier_name = "YELLOW ALERT"
         tier_title = "Heat Watch (Advisory & Preparedness)"
-        tier_color = "#CA8A04"
+        card_bg = "#713F12"        # Deep Golden Bronze
+        border_color = "#FACC15"   # Bright Yellow Border
         tier_emoji = "🟡"
-        rationale = f"Moderate heat stress. Temperature ({sim_temp:.1f}°C) exceeds normal seasonal baseline with moderate probability of spikes."
+        rationale = f"Elevated temperature ({sim_temp:.1f}°C). Precautionary heat stress advisory active before heatwave thresholds are breached."
         directives = [
             "🟡 Issue public health warnings on municipal weather portals and local radios.",
             "💧 Check urban drinking water supply lines and ensure park fountains operate.",
@@ -295,25 +299,30 @@ with tab6:
     else:
         tier_name = "GREEN ALERT"
         tier_title = "Normal Conditions (No Alert)"
-        tier_color = "#16A34A"
+        card_bg = "#14532D"        # Deep Forest Green
+        border_color = "#22C55E"   # Bright Green Border
         tier_emoji = "🟢"
-        rationale = f"Climatic parameters are within normal baseline ranges. Current Temperature ({sim_temp:.1f}°C) poses minimal public hazard."
+        rationale = f"Climatic parameters within safe seasonal limits. Temperature ({sim_temp:.1f}°C) poses minimal public health hazard."
         directives = [
             "✅ Standard seasonal meteorological monitoring active.",
             "📊 Routine telemetry logging continues."
         ]
 
-    # 3. Dynamic Alert Banner Display
+    # 3. Dynamic Alert Banner Display - 100% Solid High Contrast (Pure White Text)
     alert_html = f"""
-    <div style="background-color: {tier_color}18; border: 2px solid {tier_color}; border-radius: 12px; padding: 1.2rem; margin: 1.2rem 0;">
+    <div style="background-color: {card_bg}; border: 3px solid {border_color}; border-radius: 12px; padding: 1.4rem; margin: 1.2rem 0; box-shadow: 0 4px 15px rgba(0,0,0,0.25);">
         <div style="display: flex; align-items: center; justify-content: space-between;">
             <div>
-                <span style="font-size: 0.85rem; font-weight: 700; color: {tier_color}; text-transform: uppercase; letter-spacing: 1px;">IMD AI Early Warning Protocol</span>
-                <h2 style="margin: 0.2rem 0; color: {tier_color}; font-size: 1.7rem;">{tier_emoji} {tier_name}: {tier_title}</h2>
+                <span style="font-size: 0.85rem; font-weight: 700; color: #FFFFFF; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.9;">IMD AI Early Warning Protocol</span>
+                <h2 style="margin: 0.2rem 0; color: #FFFFFF !important; font-size: 1.7rem; font-weight: 800;">{tier_emoji} {tier_name}: {tier_title}</h2>
             </div>
-            <div style="font-size: 2.4rem;">{tier_emoji}</div>
+            <div style="font-size: 2.6rem;">{tier_emoji}</div>
         </div>
-        <p style="margin: 0.5rem 0 0 0; color: #1E293B; font-size: 1.05rem;"><strong>Statistical Rationale:</strong> {rationale}</p>
+        <div style="background: rgba(0, 0, 0, 0.35); border-left: 4px solid #FFFFFF; border-radius: 6px; padding: 0.8rem 1rem; margin-top: 0.8rem;">
+            <p style="margin: 0; color: #FFFFFF !important; font-size: 1.05rem; line-height: 1.5;">
+                <strong style="color: #FFFFFF;">Statistical Rationale:</strong> {rationale}
+            </p>
+        </div>
     </div>
     """
     st.markdown(alert_html, unsafe_allow_html=True)
@@ -325,7 +334,7 @@ with tab6:
     with kpi2:
         st.metric(label="Apparent Heat Index", value=f"{sim_heat_index:.1f} °C", delta=f"RH {sim_rh}%")
     with kpi3:
-        st.metric(label="Tail Probability P(X ≥ T)", value=f"{prob_exceed_pct:.1f}%", delta=f"Z = {z_sim:.2f}")
+        st.metric(label="Baseline P(T ≥ 40°C)", value=f"{prob_exceed_40_pct:.1f}%", delta=f"Z = {z_40:.2f}")
     with kpi4:
         st.metric(label="System Response", value=tier_name, delta="Live AI Tier")
 
