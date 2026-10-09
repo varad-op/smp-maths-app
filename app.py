@@ -220,22 +220,57 @@ with tab5:
 # ==============================================================================
 with tab6:
     st.header("🚨 AI Decision Engine & Early Warning System")
+    st.caption("STAT-AI Real-Time Command Center | Automated Municipal Hazard Assessment & Resource Allocation")
     st.markdown("---")
-    st.subheader("🎛️ Live Scenario Simulator & Real-Time Alert Trigger")
-    st.caption("Drag the sliders below during your presentation to demonstrate the live AI decision engine to the professor:")
 
-    # 1. Interactive Simulation Controls
+    # 1. Microclimate Zone & 1-Click Historical Weather Presets
+    ctrl_col1, ctrl_col2 = st.columns([1, 2])
+    
+    with ctrl_col1:
+        microclimate = st.selectbox(
+            "📍 Select Microclimate Zone:",
+            ["Mumbai Coastal (High Humidity)", "Vidarbha Inland (Dry Extreme Heat)", "Urban Heat Island (High Asphalt Density)"],
+            index=0
+        )
+        
+    with ctrl_col2:
+        preset_choice = st.radio(
+            "⚡ 1-Click Historical Weather Presets (Click to Auto-Simulate):",
+            ["Custom Sliders", "☀️ Normal Summer (34°C, 50%)", "⚠️ Pre-Monsoon Stress (38.5°C, 65%)", "🔥 2024 Heatwave (41.0°C, 55%)", "🚨 Extreme Emergency (44.0°C, 40%)"],
+            horizontal=True
+        )
+
+    # Set default values based on preset
     latest_temp = float(df['Max_Temp_C'].iloc[-1])
     latest_rh = float(df['Relative_Humidity_Pct'].iloc[-1])
     
-    sim_col1, sim_col2 = st.columns(2)
-    with sim_col1:
-        sim_temp = st.slider("Simulated Maximum Temperature (°C)", 32.0, 48.0, latest_temp, 0.5)
-    with sim_col2:
-        sim_rh = st.slider("Simulated Relative Humidity (%)", 20, 95, int(latest_rh), 1)
+    if preset_choice == "☀️ Normal Summer (34°C, 50%)":
+        def_temp, def_rh = 34.0, 50
+    elif preset_choice == "⚠️ Pre-Monsoon Stress (38.5°C, 65%)":
+        def_temp, def_rh = 38.5, 65
+    elif preset_choice == "🔥 2024 Heatwave (41.0°C, 55%)":
+        def_temp, def_rh = 41.0, 55
+    elif preset_choice == "🚨 Extreme Emergency (44.0°C, 40%)":
+        def_temp, def_rh = 44.0, 40
+    else:
+        def_temp, def_rh = latest_temp, int(latest_rh)
 
-    # Calculate Apparent Heat Index (NOAA Rothfusz regression approximation)
-    tf = sim_temp * 9/5 + 32
+    # 2. Interactive Simulation Sliders
+    st.markdown("##### 🎛️ Live Parameter Adjustment")
+    s_col1, s_col2 = st.columns(2)
+    with s_col1:
+        sim_temp = st.slider("Simulated Maximum Air Temperature (°C)", 30.0, 48.0, def_temp, 0.5)
+    with s_col2:
+        sim_rh = st.slider("Simulated Relative Humidity (%)", 15, 95, def_rh, 1)
+
+    # Apply Microclimate Adjustments
+    if "Urban Heat Island" in microclimate:
+        effective_temp = sim_temp + 1.2  # +1.2C asphalt thermal radiation penalty
+    else:
+        effective_temp = sim_temp
+
+    # 3. Calculate Apparent Heat Index (NOAA Rothfusz Polynomial)
+    tf = effective_temp * 9/5 + 32
     hif = 0.5 * (tf + 61.0 + ((tf - 68.0) * 1.2) + (sim_rh * 0.094))
     if hif >= 80:
         hif = (-42.379 + 2.04901523*tf + 10.14333127*sim_rh - 0.22475541*tf*sim_rh
@@ -243,107 +278,168 @@ with tab6:
                + 0.00085282*tf*sim_rh*sim_rh - 0.00000199*tf*tf*sim_rh*sim_rh)
     sim_heat_index = round((hif - 32) * 5/9, 1)
 
-    # Calculate Normal Distribution Tail Risk P(X >= 40°C) under fitted Gaussian model
+    # Calculate Normal Distribution Tail Risk P(T >= 40°C)
     mu_temp = float(df['Max_Temp_C'].mean())
     sigma_temp = float(df['Max_Temp_C'].std())
     z_40 = (40.0 - mu_temp) / sigma_temp
-    
-    # Standard normal CDF approximation using error function
     import math
     prob_exceed_40 = 1.0 - (0.5 * (1.0 + math.erf(z_40 / math.sqrt(2.0))))
     prob_exceed_40_pct = prob_exceed_40 * 100.0
 
-    # 2. Multi-Tier AI Decision Matrix (IMD & NDMA Guidelines)
-    # Clear, responsive thresholds based on air temperature and heat index:
-    if sim_temp >= 42.5 or (sim_temp >= 41.0 and sim_heat_index >= 55.0):
+    # Composite Thermal Hazard Score (0 to 100)
+    temp_contrib = (effective_temp - 32.0) * 6.5
+    rh_contrib = max(0.0, (sim_rh - 35.0) * 0.4)
+    raw_hazard_score = temp_contrib + rh_contrib
+    hazard_score = int(max(5.0, min(100.0, raw_hazard_score)))
+
+    # 4. Multi-Tier AI Decision Matrix (IMD & NDMA Guidelines)
+    if effective_temp >= 42.5 or (effective_temp >= 41.0 and sim_heat_index >= 55.0) or hazard_score >= 80:
         tier_name = "RED ALERT"
         tier_title = "Severe Heatwave Warning (Extreme Emergency Action)"
         card_bg = "#7F1D1D"        # Deep Crimson Red
         border_color = "#EF4444"   # Bright Red Border
+        gauge_bar_color = "#DC2626"
         tier_emoji = "🔴"
-        rationale = f"Severe thermal emergency! Temperature ({sim_temp:.1f}°C) or Heat Index ({sim_heat_index:.1f}°C) poses fatal heatstroke risk even during light activity."
+        rationale = f"Severe thermal disaster threshold breached! Effective temperature ({effective_temp:.1f}°C) and Heat Index ({sim_heat_index:.1f}°C) create acute, life-threatening heatstroke conditions."
+        hosp_beds = "+180 dedicated ICU beds"
+        water_surge = "+40% tanker dispatches"
+        power_surge = "+32% cooling load (overload risk)"
         directives = [
-            "🚨 Immediate red alert broadcast via municipal disaster channels.",
-            "🏥 Hospital Emergency Protocol: Activate dedicated air-conditioned heatstroke ICU wards.",
-            "🚧 Labor Directive: Mandatory legal shutdown of outdoor construction from 11:30 AM to 4:00 PM.",
+            "🚨 Immediate red alert broadcast via municipal disaster SMS & radio bulletins.",
+            "🏥 Hospital Emergency Protocol: Activate dedicated air-conditioned heatstroke ICU triage centers.",
+            "🚧 Labor Directive: Mandatory legal shutdown of all outdoor construction from 11:30 AM to 4:00 PM.",
             "💧 Water Utilities: Pre-position high-capacity water tankers in vulnerable informal settlements.",
-            "⚡ Power Grid Management: Ramp up grid spinning reserves to prevent transformer burnout under peak AC cooling loads."
+            "⚡ Power Grid Management: Ramp up grid spinning reserves to prevent transformer burnout under peak AC cooling loads.",
+            "🏫 Educational Institutions: Close all primary schools or restrict hours strictly until 11:00 AM."
         ]
-    elif sim_temp >= 40.0 or (sim_temp >= 39.0 and sim_heat_index >= 50.0):
+    elif effective_temp >= 40.0 or (effective_temp >= 39.0 and sim_heat_index >= 50.0) or hazard_score >= 60:
         tier_name = "ORANGE ALERT"
         tier_title = "Heatwave Alert (Severe Action Required)"
         card_bg = "#7C2D12"        # Deep Rust Orange
         border_color = "#F97316"   # Bright Orange Border
+        gauge_bar_color = "#EA580C"
         tier_emoji = "🟠"
-        rationale = f"Heatwave conditions active. Temperature ({sim_temp:.1f}°C) breaches the official IMD 40°C threshold. Vulnerable demographics at serious risk."
+        rationale = f"Official IMD heatwave criteria breached. Sustained thermal accumulation ({effective_temp:.1f}°C) poses severe danger to vulnerable populations."
+        hosp_beds = "+85 hydration & triage beds"
+        water_surge = "+25% tanker dispatches"
+        power_surge = "+18% cooling load"
         directives = [
             "⚠️ Issue Orange Alert for high-risk demographics (infants, elderly, chronic illness patients).",
-            "🏥 Hospitals: Stock emergency reserves of ORS packets, IV fluids, and ice packs.",
-            "🕒 Primary schools adjust afternoon timings; end all outdoor physical classes by 11:00 AM.",
-            "💧 Set up public drinking water kiosks ('Pyaaos') at railway stations and transit hubs."
+            "🏥 Hospitals: Stock emergency reserves of ORS packets, IV fluids, and ice packs in casualty departments.",
+            "🕒 Primary schools adjust afternoon timings; end all outdoor physical activities by 11:00 AM.",
+            "💧 Set up public drinking water kiosks ('Pyaaos') at railway stations and transit hubs.",
+            "👷 Ensure mandatory shaded rest areas and hydration facilities for municipal street workers."
         ]
-    elif sim_temp >= 38.0:
+    elif effective_temp >= 38.0 or hazard_score >= 40:
         tier_name = "YELLOW ALERT"
         tier_title = "Heat Watch (Advisory & Preparedness)"
         card_bg = "#713F12"        # Deep Golden Bronze
         border_color = "#FACC15"   # Bright Yellow Border
+        gauge_bar_color = "#CA8A04"
         tier_emoji = "🟡"
-        rationale = f"Elevated temperature ({sim_temp:.1f}°C). Precautionary heat stress advisory active before heatwave thresholds are breached."
+        rationale = f"Elevated temperature ({effective_temp:.1f}°C). Precautionary heat stress advisory active before heatwave thresholds are breached."
+        hosp_beds = "+30 outpatient triage beds"
+        water_surge = "+12% tanker dispatches"
+        power_surge = "+8% cooling load"
         directives = [
             "🟡 Issue public health warnings on municipal weather portals and local radios.",
             "💧 Check urban drinking water supply lines and ensure park fountains operate.",
-            "🩺 Primary health clinics on standby for early dehydration and heat exhaustion cases."
+            "🩺 Primary health clinics on standby for early dehydration and heat exhaustion cases.",
+            "🏢 Advise commercial buildings to regulate AC temperatures to 24°C to conserve energy."
         ]
     else:
         tier_name = "GREEN ALERT"
         tier_title = "Normal Conditions (No Alert)"
         card_bg = "#14532D"        # Deep Forest Green
         border_color = "#22C55E"   # Bright Green Border
+        gauge_bar_color = "#16A34A"
         tier_emoji = "🟢"
-        rationale = f"Climatic parameters within safe seasonal limits. Temperature ({sim_temp:.1f}°C) poses minimal public health hazard."
+        rationale = f"Climatic parameters within safe seasonal limits. Temperature ({effective_temp:.1f}°C) poses minimal public health hazard."
+        hosp_beds = "Standard baseline capacity"
+        water_surge = "Normal municipal volume"
+        power_surge = "Standard baseline demand"
         directives = [
             "✅ Standard seasonal meteorological monitoring active.",
             "📊 Routine telemetry logging continues."
         ]
 
-    # 3. Dynamic Alert Banner Display - 100% Solid High Contrast (Pure White Text)
-    alert_html = f"""
-    <div style="background-color: {card_bg}; border: 3px solid {border_color}; border-radius: 12px; padding: 1.4rem; margin: 1.2rem 0; box-shadow: 0 4px 15px rgba(0,0,0,0.25);">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div>
-                <span style="font-size: 0.85rem; font-weight: 700; color: #FFFFFF; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.9;">IMD AI Early Warning Protocol</span>
-                <h2 style="margin: 0.2rem 0; color: #FFFFFF !important; font-size: 1.7rem; font-weight: 800;">{tier_emoji} {tier_name}: {tier_title}</h2>
-            </div>
-            <div style="font-size: 2.6rem;">{tier_emoji}</div>
-        </div>
-        <div style="background: rgba(0, 0, 0, 0.35); border-left: 4px solid #FFFFFF; border-radius: 6px; padding: 0.8rem 1rem; margin-top: 0.8rem;">
-            <p style="margin: 0; color: #FFFFFF !important; font-size: 1.05rem; line-height: 1.5;">
-                <strong style="color: #FFFFFF;">Statistical Rationale:</strong> {rationale}
-            </p>
-        </div>
-    </div>
-    """
-    st.markdown(alert_html, unsafe_allow_html=True)
+    st.markdown("---")
 
-    # 4. KPI Metric Cards
-    kpi1, kpi2, kpi3, kpi4 = st.columns(4)
-    with kpi1:
-        st.metric(label="Simulated Max Temp", value=f"{sim_temp:.1f} °C", delta=f"{sim_temp - latest_temp:+.1f} °C" if sim_temp != latest_temp else None)
-    with kpi2:
-        st.metric(label="Apparent Heat Index", value=f"{sim_heat_index:.1f} °C", delta=f"RH {sim_rh}%")
-    with kpi3:
-        st.metric(label="Baseline P(T ≥ 40°C)", value=f"{prob_exceed_40_pct:.1f}%", delta=f"Z = {z_40:.2f}")
-    with kpi4:
-        st.metric(label="System Response", value=tier_name, delta="Live AI Tier")
+    # 5. Dual Display: Speedometer Radial Gauge + Solid High-Contrast Banner
+    gauge_col, banner_col = st.columns([1, 1.3])
+
+    with gauge_col:
+        import plotly.graph_objects as go
+        fig_gauge = go.Figure(go.Indicator(
+            mode="gauge+number",
+            value=hazard_score,
+            domain={'x': [0, 1], 'y': [0, 1]},
+            title={'text': "<b>THERMAL HAZARD INDEX</b><br><span style='font-size:0.8em;color:gray'>Dynamic AI Risk Score (0-100)</span>", 'font': {'size': 16}},
+            gauge={
+                'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "#475569"},
+                'bar': {'color': gauge_bar_color, 'thickness': 0.32},
+                'bgcolor': "white",
+                'borderwidth': 2,
+                'bordercolor': "#CBD5E1",
+                'steps': [
+                    {'range': [0, 40], 'color': '#DCFCE7'},
+                    {'range': [40, 60], 'color': '#FEF9C3'},
+                    {'range': [60, 80], 'color': '#FFEDD5'},
+                    {'range': [80, 100], 'color': '#FEE2E2'}
+                ],
+                'threshold': {
+                    'line': {'color': "#DC2626", 'width': 4},
+                    'thickness': 0.75,
+                    'value': 80
+                }
+            }
+        ))
+        fig_gauge.update_layout(height=280, margin=dict(l=15, r=15, t=40, b=15))
+        st.plotly_chart(fig_gauge, use_container_width=True)
+
+    with banner_col:
+        alert_html = f"""
+        <div style="background-color: {card_bg}; border: 3px solid {border_color}; border-radius: 12px; padding: 1.4rem; box-shadow: 0 4px 15px rgba(0,0,0,0.25); height: 100%;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <span style="font-size: 0.85rem; font-weight: 700; color: #FFFFFF; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.9;">IMD AI Early Warning Protocol</span>
+                    <h2 style="margin: 0.2rem 0; color: #FFFFFF !important; font-size: 1.7rem; font-weight: 800;">{tier_emoji} {tier_name}</h2>
+                    <div style="color: #F8FAFC; font-weight: 600; font-size: 1.05rem;">{tier_title}</div>
+                </div>
+                <div style="font-size: 2.8rem;">{tier_emoji}</div>
+            </div>
+            <div style="background: rgba(0, 0, 0, 0.35); border-left: 4px solid #FFFFFF; border-radius: 6px; padding: 0.8rem 1rem; margin-top: 1rem;">
+                <p style="margin: 0; color: #FFFFFF !important; font-size: 0.98rem; line-height: 1.5;">
+                    <strong style="color: #FFFFFF;">Statistical Rationale:</strong> {rationale}
+                </p>
+            </div>
+        </div>
+        """
+        st.markdown(alert_html, unsafe_allow_html=True)
 
     st.markdown("---")
 
-    # 5. Two-Column Layout: Telemetry Chart + Action Directives
+    # 6. AI Engineering & Municipal Impact Estimator
+    st.subheader("🏥 AI Engineering & Municipal Impact Estimator")
+    st.caption("Quantitative resource surge projections calculated from statistical thermal hazard metrics:")
+
+    imp1, imp2, imp3, imp4 = st.columns(4)
+    with imp1:
+        st.metric(label="Simulated Max Temp", value=f"{effective_temp:.1f} °C", delta=f"{effective_temp - latest_temp:+.1f} °C vs latest")
+    with imp2:
+        st.metric(label="Hospital Triage Demand", value=hosp_beds, delta="Emergency beds")
+    with imp3:
+        st.metric(label="Water Tanker Demand", value=water_surge, delta="Municipal volume")
+    with imp4:
+        st.metric(label="Power Grid Surge", value=power_surge, delta="Cooling load")
+
+    st.markdown("---")
+
+    # 7. Two-Column Analytics: Telemetry vs Thresholds & Municipal Directives
     graph_col, action_col = st.columns([3, 2])
 
     with graph_col:
         st.subheader("📈 Temperature Telemetry vs IMD Warning Thresholds")
-        import plotly.graph_objects as go
         fig_ts = go.Figure()
         
         # Historical Max Temp line
@@ -372,7 +468,49 @@ with tab6:
 
     st.markdown("---")
 
-    # 6. Team Showcase Summary Table
+    # 8. One-Click Official Municipal Action Plan Bulletin Download
+    st.subheader("📥 Official Municipal Early Warning Bulletin")
+    st.caption("Generate and download the official disaster management action bulletin for this simulated scenario:")
+
+    official_bulletin = f"""================================================================================
+MUNICIPAL CORPORATION DISASTER MANAGEMENT CELL
+HEATWAVE EARLY WARNING ACTION PLAN BULLETIN
+Issued under IMD & NDMA National Guidelines | STAT-AI IA1
+================================================================================
+Timestamp: Current Assessment Simulation
+Microclimate Zone: {microclimate}
+Alert Level: {tier_emoji} {tier_name} ({tier_title})
+Composite Thermal Hazard Index: {hazard_score} / 100
+
+METEOROLOGICAL PARAMETERS:
+- Simulated Surface Temperature: {effective_temp:.1f} °C
+- Relative Humidity: {sim_rh} %
+- Apparent Heat Index (NOAA): {sim_heat_index:.1f} °C
+- Seasonal Baseline Mean (μ): {mu_temp:.2f} °C
+- Baseline P(T >= 40°C): {prob_exceed_40_pct:.2f} %
+
+PROJECTED MUNICIPAL IMPACT:
+- Hospital Emergency Heatstroke Load: {hosp_beds}
+- Municipal Water Supply Surge: {water_surge}
+- Power Grid Cooling Load Surge: {power_surge}
+
+MANDATED CIVIL DIRECTIVES:
+{chr(10).join(['* ' + d for d in directives])}
+
+STATISTICAL RATIONALE:
+{rationale}
+================================================================================
+"""
+    st.download_button(
+        label="📄 Download Official Heatwave Advisory Bulletin (.txt)",
+        data=official_bulletin,
+        file_name=f"IMD_Heatwave_Advisory_{tier_name.replace(' ', '_')}.txt",
+        mime="text/plain"
+    )
+
+    st.markdown("---")
+
+    # 9. Team Showcase Summary Table
     st.subheader("👥 Group Roster & Presentation Timeline (6–7 Mins)")
     team_roster = pd.DataFrame([
         {"Tab": "Tab 1", "Member": "Member 1", "Focus": "Data Hygiene, IQR Outliers, 7-Bin Frequency Table, Ogive", "Slot": "0:00 – 1:00 min"},
