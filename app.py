@@ -464,34 +464,34 @@ with tab6:
     imp1, imp2, imp3, imp4 = st.columns(4)
     with imp1:
         st.markdown(f"""
-        <div style="background: #0F172A; border: 1px solid #334155; border-radius: 10px; padding: 1.1rem; border-left: 5px solid #2563EB; min-height: 125px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
-            <div style="font-size: 0.8rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">🌡️ Effective Temp</div>
-            <div style="font-size: 1.8rem; font-weight: 800; color: #FFFFFF; margin: 0.2rem 0;">{effective_temp:.1f} °C</div>
-            <div style="font-size: 0.85rem; color: #CBD5E1;">Heat Index: <strong style="color: #60A5FA;">{sim_heat_index:.1f} °C</strong></div>
+        <div style="background: #0F172A; border: 1px solid #334155; border-radius: 10px; padding: 1rem 1.1rem; border-left: 5px solid #2563EB; height: 150px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+            <div style="font-size: 0.78rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">🌡️ Effective Temp</div>
+            <div style="font-size: 1.55rem; font-weight: 800; color: #FFFFFF; margin: 0.15rem 0; white-space: nowrap;">{effective_temp:.1f} °C</div>
+            <div style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.35; min-height: 2.4rem; display: flex; align-items: flex-start;">Heat Index: <strong style="color: #60A5FA; margin-left: 4px;">{sim_heat_index:.1f} °C</strong></div>
         </div>
         """, unsafe_allow_html=True)
     with imp2:
         st.markdown(f"""
-        <div style="background: #0F172A; border: 1px solid #334155; border-radius: 10px; padding: 1.1rem; border-left: 5px solid #EF4444; min-height: 125px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
-            <div style="font-size: 0.8rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">🏥 Hospital Triage</div>
-            <div style="font-size: 1.8rem; font-weight: 800; color: #FFFFFF; margin: 0.2rem 0;">{hosp_val}</div>
-            <div style="font-size: 0.85rem; color: #CBD5E1;">{hosp_desc}</div>
+        <div style="background: #0F172A; border: 1px solid #334155; border-radius: 10px; padding: 1rem 1.1rem; border-left: 5px solid #EF4444; height: 150px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+            <div style="font-size: 0.78rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">🏥 Hospital Triage</div>
+            <div style="font-size: 1.55rem; font-weight: 800; color: #FFFFFF; margin: 0.15rem 0; white-space: nowrap;">{hosp_val}</div>
+            <div style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.35; min-height: 2.4rem; display: flex; align-items: flex-start;">{hosp_desc}</div>
         </div>
         """, unsafe_allow_html=True)
     with imp3:
         st.markdown(f"""
-        <div style="background: #0F172A; border: 1px solid #334155; border-radius: 10px; padding: 1.1rem; border-left: 5px solid #0284C7; min-height: 125px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
-            <div style="font-size: 0.8rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">💧 Water Tankers</div>
-            <div style="font-size: 1.8rem; font-weight: 800; color: #FFFFFF; margin: 0.2rem 0;">{water_val}</div>
-            <div style="font-size: 0.85rem; color: #CBD5E1;">{water_desc}</div>
+        <div style="background: #0F172A; border: 1px solid #334155; border-radius: 10px; padding: 1rem 1.1rem; border-left: 5px solid #0284C7; height: 150px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+            <div style="font-size: 0.78rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">💧 Water Tankers</div>
+            <div style="font-size: 1.55rem; font-weight: 800; color: #FFFFFF; margin: 0.15rem 0; white-space: nowrap;">{water_val}</div>
+            <div style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.35; min-height: 2.4rem; display: flex; align-items: flex-start;">{water_desc}</div>
         </div>
         """, unsafe_allow_html=True)
     with imp4:
         st.markdown(f"""
-        <div style="background: #0F172A; border: 1px solid #334155; border-radius: 10px; padding: 1.1rem; border-left: 5px solid #F59E0B; min-height: 125px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
-            <div style="font-size: 0.8rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">⚡ Power Grid Load</div>
-            <div style="font-size: 1.8rem; font-weight: 800; color: #FFFFFF; margin: 0.2rem 0;">{power_val}</div>
-            <div style="font-size: 0.85rem; color: #CBD5E1;">{power_desc}</div>
+        <div style="background: #0F172A; border: 1px solid #334155; border-radius: 10px; padding: 1rem 1.1rem; border-left: 5px solid #F59E0B; height: 150px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+            <div style="font-size: 0.78rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">⚡ Power Grid Load</div>
+            <div style="font-size: 1.55rem; font-weight: 800; color: #FFFFFF; margin: 0.15rem 0; white-space: nowrap;">{power_val}</div>
+            <div style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.35; min-height: 2.4rem; display: flex; align-items: flex-start;">{power_desc}</div>
         </div>
         """, unsafe_allow_html=True)
 
