@@ -1,4 +1,4 @@
-﻿"""
+"""
 Module 2: Descriptive Statistics & Dispersion
 Owned by: Member 2 (Descriptive Statistics Lead)
 Topic: Mean, Median, Mode, Variance, Standard Deviation, Coefficient of Variation
@@ -25,7 +25,7 @@ def compute_ungrouped_stats(series):
     
     steps = {
         'mean_formula': r"\bar{x} = \frac{\sum_{i=1}^N x_i}{N}",
-        'mean_sub': rf"\bar{x} = \frac{{{sum_x:.2f}}}{{{n}}} = {mean_val:.2f}^\circ\text{{C}}",
+        'mean_sub': rf"\bar{{x}} = \frac{{{sum_x:.2f}}}{{{n}}} = {mean_val:.2f}^\circ\text{{C}}",
         'variance_formula': r"s^2 = \frac{\sum_{i=1}^N (x_i - \bar{x})^2}{N - 1}",
         'variance_sub': rf"s^2 = \frac{{{sum_sq_diff:.2f}}}{{{n} - 1}} = \frac{{{sum_sq_diff:.2f}}}{{{n - 1}}} = {variance_val:.4f}\ (^\circ\text{{C}})^2",
         'std_formula': r"s = \sqrt{s^2}",

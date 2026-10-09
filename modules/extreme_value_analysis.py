@@ -1,10 +1,28 @@
-﻿"""
+"""
 Module 3: Variability & Extreme Temperature Analysis
 Owned by: Member 3 (Probability & Normal Distribution Specialist)
 Topic: Normal Distribution, Z-score, Tail Exceedance Probability, Extreme Heat Risk
 """
 import numpy as np
-from scipy import stats
+import math
+
+try:
+    from scipy import stats
+    HAS_SCIPY = True
+except ImportError:
+    HAS_SCIPY = False
+
+def _normal_cdf(z):
+    """Compute Standard Normal CDF Phi(z)."""
+    if HAS_SCIPY:
+        return float(stats.norm.cdf(z))
+    return 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))
+
+def _normal_pdf(x, mu, sigma):
+    """Compute Normal PDF f(x)."""
+    if HAS_SCIPY:
+        return stats.norm.pdf(x, mu, sigma)
+    return (1.0 / (sigma * math.sqrt(2.0 * math.pi))) * np.exp(-0.5 * ((x - mu) / sigma) ** 2)
 
 def fit_normal_distribution(series):
     """Estimate parameters mu and sigma of normal distribution."""
@@ -23,7 +41,7 @@ def calculate_exceedance_probability(threshold, mu, sigma):
     P(X >= threshold) = 1 - Phi(Z)
     """
     z_score = (threshold - mu) / sigma
-    prob_exceed = 1.0 - stats.norm.cdf(z_score)
+    prob_exceed = 1.0 - _normal_cdf(z_score)
     pct_exceed = prob_exceed * 100.0
     
     steps = {
@@ -53,5 +71,5 @@ def get_standard_imd_threshold_risks(mu, sigma):
 def generate_normal_curve_data(mu, sigma, num_points=250):
     """Generate x and y coordinates for Normal Distribution plotting."""
     x = np.linspace(mu - 4 * sigma, mu + 4 * sigma, num_points)
-    y = stats.norm.pdf(x, mu, sigma)
+    y = _normal_pdf(x, mu, sigma)
     return x, y
