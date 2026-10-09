@@ -1,4 +1,4 @@
-import streamlit as st
+﻿import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -105,14 +105,14 @@ current_heat_index = calc_heat_index(current_max_temp, current_humidity)
 
 # Sidebar Team Attribution
 st.sidebar.markdown("---")
-st.sidebar.subheader("👥 Group 6 Member Matrix")
+st.sidebar.subheader("👥 6-Member Roster")
 team_members = [
-    ("Member 1", "Data Engineering & Frequency Tables", "data_loader.py"),
-    ("Member 2", "Descriptive Stats & Dispersion", "descriptive_stats.py"),
-    ("Member 3", "Extreme Value & Normal Dist", "extreme_value_analysis.py"),
-    ("Member 4", "Conditional Prob & Bayes' Update", "bayesian_inference.py"),
-    ("Member 5", "Random Process & Time Series", "time_series_process.py"),
-    ("Member 6", "AI Decision Engine & UI Lead", "decision_engine.py & app.py")
+    ("Tab 1: Member 1", "Data & Frequency Tables", "data_loader.py"),
+    ("Tab 2: Member 2", "Descriptive Stats & Dispersion", "descriptive_stats.py"),
+    ("Tab 3: Member 3", "Extreme Value & Normal Dist", "extreme_value_analysis.py"),
+    ("Tab 4: Member 4", "Conditional Prob & Bayes", "bayesian_inference.py"),
+    ("Tab 5: Member 5", "Random Process & Time Series", "time_series_process.py"),
+    ("Tab 6: Member 6 (Lead)", "AI Decision Engine & UI", "decision_engine.py & app.py")
 ]
 for m, role, mod in team_members:
     st.sidebar.markdown(f"**{m}**: {role} `({mod})`")
@@ -140,22 +140,316 @@ ai_decision = evaluate_heatwave_risk(
 st.markdown("<div class='main-title'>☀️ AI-Based Heatwave Monitoring & Early Warning System</div>", unsafe_allow_html=True)
 st.markdown("<div class='sub-title'>Case Study 1 | Statistical Investigation & Interactive Demonstration | IA-1 Assessment</div>", unsafe_allow_html=True)
 
-# --- Top Level Navigation Tabs ---
+# --- 6 DEDICATED TABS FOR THE 6 MEMBERS ---
 tabs = st.tabs([
-    "🚨 Live AI Early Warning",
-    "📊 1. Data & Frequency (M1)",
-    "📐 2. Descriptive Stats (M2)",
-    "🔔 3. Normal Distribution (M3)",
-    "🎲 4. Bayesian Inference (M4)",
-    "⏳ 5. Random Process (M5)",
-    "📑 6. Investigation Sheet & Team"
+    "📊 Tab 1: Member 1 (Data & Frequency)",
+    "📐 Tab 2: Member 2 (Descriptive Stats)",
+    "🔔 Tab 3: Member 3 (Normal Distribution)",
+    "🎲 Tab 4: Member 4 (Bayesian Inference)",
+    "⏳ Tab 5: Member 5 (Random Process)",
+    "🚨 Tab 6: Member 6 (AI Decision Engine)"
 ])
 
 # ==========================================
-# TAB 1: EXECUTIVE AI EARLY WARNING DASHBOARD
+# TAB 1: MEMBER 1 - DATA ENGINEERING & FREQUENCY TABLES
 # ==========================================
 with tabs[0]:
-    st.markdown("### 🎛️ Real-Time Early Warning & Decision Matrix")
+    st.markdown("### 📊 Tab 1: Data Hygiene, Ingestion & Frequency Distribution")
+    st.caption("Responsible: **Member 1 (Data Engineer & Ingestion Lead)** | Presentation Slot: **Min 0:00 – 1:00**")
+    
+    col1, col2 = st.columns([1, 2])
+    
+    with col1:
+        st.subheader("1. Data Hygiene & Outlier Detection")
+        outliers = detect_outliers_iqr(df_raw['Max_Temp_C'])
+        
+        st.markdown(f"""
+        - **Total Observations ($N$):** {len(df_raw)} days (IMD Maharashtra Records)
+        - **First Quartile ($Q_1$):** {outliers['q1']} °C
+        - **Third Quartile ($Q_3$):** {outliers['q3']} °C
+        - **Interquartile Range ($IQR$):** {outliers['iqr']} °C
+        - **Lower Fence ($Q_1 - 1.5 \\times IQR$):** {outliers['lower_bound']} °C
+        - **Upper Fence ($Q_3 + 1.5 \\times IQR$):** {outliers['upper_bound']} °C
+        - **Identified Outliers:** {outliers['outlier_count']} observations {outliers['outlier_values']}
+        """)
+        
+        st.markdown("<div class='formula-box'>", unsafe_allow_html=True)
+        st.latex(r"IQR = Q_3 - Q_1")
+        st.latex(rf"\text{{IQR}} = {outliers['q3']} - {outliers['q1']} = {outliers['iqr']}^\circ\text{{C}}")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with col2:
+        st.subheader("2. Continuous Frequency Distribution Table")
+        num_bins = st.slider("Select Number of Class Intervals (Sturges' Rule)", 5, 10, 7)
+        freq_df, bin_edges = generate_frequency_distribution(df_raw['Max_Temp_C'], num_bins=num_bins)
+        
+        st.dataframe(freq_df, use_container_width=True)
+        
+        st.markdown("<div class='formula-box'>", unsafe_allow_html=True)
+        st.markdown(rf"**Verification:** $\sum f_i = {freq_df['Frequency (fi)'].sum()}$ (Matches $N = {len(df_raw)}$) | $\sum f_i x_i = {freq_df['fi * xi'].sum():.2f}$")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.subheader("3. Graphical Representations: Histogram & Ogive Curve")
+    g_col1, g_col2 = st.columns(2)
+    
+    with g_col1:
+        fig_hist = px.histogram(
+            df_raw, x="Max_Temp_C", nbins=num_bins,
+            title="Histogram of Daily Maximum Temperature",
+            labels={'Max_Temp_C': 'Max Temperature (°C)'},
+            color_discrete_sequence=['#3B82F6']
+        )
+        st.plotly_chart(fig_hist, use_container_width=True)
+        
+    with g_col2:
+        fig_ogive = go.Figure()
+        fig_ogive.add_trace(go.Scatter(
+            x=freq_df['Upper Limit (U)'], y=freq_df['Cumulative Freq (cf)'],
+            mode='lines+markers', name='Less-than Ogive',
+            line=dict(color='#10B981', width=2)
+        ))
+        fig_ogive.update_layout(
+            title="Cumulative Frequency (Less-than Ogive) Curve",
+            xaxis_title="Upper Class Boundary (°C)", yaxis_title="Cumulative Frequency (cf)"
+        )
+        st.plotly_chart(fig_ogive, use_container_width=True)
+
+# ==========================================
+# TAB 2: MEMBER 2 - DESCRIPTIVE STATS & DISPERSION
+# ==========================================
+with tabs[1]:
+    st.markdown("### 📐 Tab 2: Central Tendency & Measures of Dispersion")
+    st.caption("Responsible: **Member 2 (Descriptive Statistics Lead)** | Presentation Slot: **Min 1:00 – 2:00**")
+    
+    grouped_stats = compute_grouped_stats(freq_df)
+    
+    d_c1, d_c2, d_c3, d_c4 = st.columns(4)
+    with d_c1:
+        st.metric("Sample Mean (x̄)", f"{stat_summary['mean']} °C", f"Grouped: {grouped_stats['grouped_mean']} °C")
+    with d_c2:
+        st.metric("Median (Md)", f"{stat_summary['median']} °C", f"Grouped: {grouped_stats['grouped_median']} °C")
+    with d_c3:
+        st.metric("Std Deviation (s)", f"{stat_summary['std_dev']} °C", f"Variance: {stat_summary['variance']}")
+    with d_c4:
+        st.metric("Coeff of Variation (CV)", f"{stat_summary['cv']} %", "Thermal Volatility")
+
+    st.markdown("---")
+    st.subheader("Step-by-Step Numerical Derivations (Manual Substitution)")
+    
+    s_col1, s_col2 = st.columns(2)
+    
+    with s_col1:
+        st.markdown("**1. Sample Mean Calculation:**")
+        st.latex(stat_summary['steps']['mean_formula'])
+        st.latex(stat_summary['steps']['mean_sub'])
+        
+        st.markdown("**2. Sample Variance Calculation (Bessel's Correction N-1):**")
+        st.latex(stat_summary['steps']['variance_formula'])
+        st.latex(stat_summary['steps']['variance_sub'])
+
+    with s_col2:
+        st.markdown("**3. Standard Deviation Calculation:**")
+        st.latex(stat_summary['steps']['std_formula'])
+        st.latex(stat_summary['steps']['std_sub'])
+        
+        st.markdown("**4. Coefficient of Variation (CV) Calculation:**")
+        st.latex(stat_summary['steps']['cv_formula'])
+        st.latex(stat_summary['steps']['cv_sub'])
+        
+    st.markdown("<div class='formula-box'>", unsafe_allow_html=True)
+    st.markdown(rf"""
+    **Engineering Interpretation:**
+    - A Coefficient of Variation of **{stat_summary['cv']}%** indicates relative thermal stability in the baseline, but the spread ($s = {stat_summary['std_dev']}^\circ\text{{C}}$) is large enough that a positive $2\sigma$ departure pushes the region straight into severe heatwave territory.
+    - Grouped Mean (${grouped_stats['grouped_mean']}^\circ\text{{C}}$) closely matches Ungrouped Mean (${stat_summary['mean']}^\circ\text{{C}}$), verifying minimal grouping error.
+    """)
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    st.subheader("Box-and-Whisker Dispersion Diagram")
+    fig_box = px.box(df_raw, y="Max_Temp_C", points="all", title="Temperature Dispersion & Quartile Distribution")
+    st.plotly_chart(fig_box, use_container_width=True)
+
+# ==========================================
+# TAB 3: MEMBER 3 - EXTREME VALUE & NORMAL DISTRIBUTION
+# ==========================================
+with tabs[2]:
+    st.markdown("### 🔔 Tab 3: Variability & Extreme Temperature Analysis")
+    st.caption("Responsible: **Member 3 (Probability & Normal Distribution Specialist)** | Presentation Slot: **Min 2:00 – 3:15**")
+    
+    p_col1, p_col2 = st.columns([1, 2])
+    
+    with p_col1:
+        st.subheader("1. Gaussian Distribution Parameters")
+        st.markdown(rf"""
+        - **Fitted Mean ($\mu$):** {norm_params['mu']} °C
+        - **Fitted Std Dev ($\sigma$):** {norm_params['sigma']} °C
+        - **Variance ($\sigma^2$):** {norm_params['variance']} (°C)²
+        """)
+        
+        st.markdown("---")
+        st.subheader("2. Interactive Threshold Probability")
+        user_thresh = st.slider("Select Temperature Threshold (°C)", 36.0, 48.0, 40.0, 0.5)
+        user_res = calculate_exceedance_probability(user_thresh, norm_params['mu'], norm_params['sigma'])
+        
+        st.markdown("<div class='formula-box'>", unsafe_allow_html=True)
+        st.latex(user_res['steps']['z_formula'])
+        st.latex(user_res['steps']['z_sub'])
+        st.latex(user_res['steps']['prob_formula'])
+        st.latex(user_res['steps']['prob_sub'])
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with p_col2:
+        st.subheader("3. Fitted Normal Distribution & Critical Tail Area")
+        x_norm, y_norm = generate_normal_curve_data(norm_params['mu'], norm_params['sigma'])
+        
+        fig_norm = go.Figure()
+        fig_norm.add_trace(go.Scatter(
+            x=x_norm, y=y_norm, mode='lines', name=f"N({norm_params['mu']}, {norm_params['sigma']}²)",
+            line=dict(color='#2563EB', width=2.5)
+        ))
+        
+        mask = x_norm >= user_thresh
+        if np.any(mask):
+            fig_norm.add_trace(go.Scatter(
+                x=np.concatenate([[user_thresh], x_norm[mask], [x_norm[mask][-1]]]),
+                y=np.concatenate([[0], y_norm[mask], [0]]),
+                fill='toself', fillcolor='rgba(220, 38, 38, 0.4)',
+                line=dict(color='rgba(220, 38, 38, 0)'),
+                name=f"P(T ≥ {user_thresh}°C) = {user_res['percentage']}%"
+            ))
+            
+        fig_norm.add_vline(x=user_thresh, line_dash="dash", line_color="#DC2626")
+        fig_norm.update_layout(
+            title=f"Normal Curve PDF (Shaded Critical Area = {user_res['percentage']}%)",
+            xaxis_title="Maximum Temperature (°C)", yaxis_title="Probability Density f(x)"
+        )
+        st.plotly_chart(fig_norm, use_container_width=True)
+
+    st.subheader("4. Standard IMD Operational Risk Probabilities")
+    std_risks = get_standard_imd_threshold_risks(norm_params['mu'], norm_params['sigma'])
+    risk_summary_df = pd.DataFrame([{
+        'Threshold Level': f"{r['threshold']} °C",
+        'Z-Score': r['z_score'],
+        'P(X ≥ T)': f"{r['probability']:.4f}",
+        'Probability (%)': f"{r['percentage']}%",
+        'Risk Category': 'Moderate' if r['threshold'] < 40 else 'Severe Heatwave' if r['threshold'] < 45 else 'Extreme Catastrophe'
+    } for r in std_risks])
+    st.table(risk_summary_df)
+
+# ==========================================
+# TAB 4: MEMBER 4 - BAYESIAN INFERENCE & CONDITIONAL PROBABILITY
+# ==========================================
+with tabs[3]:
+    st.markdown("### 🎲 Tab 4: Conditional Probability & Bayesian Heatwave Inference")
+    st.caption("Responsible: **Member 4 (Conditional Probability & Bayes' Inference Lead)** | Presentation Slot: **Min 3:15 – 4:30**")
+    
+    b_col1, b_col2 = st.columns(2)
+    
+    with b_col1:
+        st.subheader("1. Joint & Marginal Contingency Table")
+        jm_data = compute_joint_marginal_tables(df_raw)
+        st.markdown("**Contingency Table: Counts**")
+        st.dataframe(jm_data['cross_tab'], use_container_width=True)
+        
+        st.markdown("**Joint & Marginal Probabilities (%)**")
+        st.dataframe(jm_data['prob_tab'], use_container_width=True)
+        
+        st.markdown("<div class='formula-box'>", unsafe_allow_html=True)
+        st.latex(r"P(\text{Heatwave} \mid \text{High Humidity}) = \frac{n(\text{Heatwave} \cap \text{High Hum})}{n(\text{High Hum})}")
+        st.latex(rf"= \frac{{{jm_data['n_both']}}}{{{jm_data['n_high_hum']}}} = {jm_data['cond_prob']:.4f}\ ({jm_data['cond_prob']*100:.1f}\%)")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with b_col2:
+        st.subheader("2. Bayes' Theorem: AI/IoT Sensor Belief Update")
+        st.write("An IoT Weather Station flags a Heatwave Alert ($S$). What is the posterior belief of a true heatwave ($H$)?")
+        
+        sens = st.slider("Sensor Sensitivity P(S | H) (True Positive Rate)", 0.70, 0.99, 0.92, 0.01)
+        fpr = st.slider("Sensor False Alarm Rate P(S | ~H)", 0.01, 0.30, 0.08, 0.01)
+        
+        prior_h = jm_data['prior_heatwave']
+        bayes_res = compute_bayes_sensor_update(prior_h, sensitivity=sens, false_positive_rate=fpr)
+        
+        st.markdown("<div class='formula-box'>", unsafe_allow_html=True)
+        st.latex(bayes_res['steps']['bayes_formula'])
+        st.latex(bayes_res['steps']['bayes_sub'])
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        st.success(f"**Bayesian Result:** Given a sensor alarm, posterior belief jumps from prior **{prior_h*100:.1f}%** to **{bayes_res['posterior_pct']}%**!")
+
+    st.markdown("---")
+    st.subheader("3. 2D Joint Distribution Heatmap (Temperature vs Relative Humidity)")
+    fig_joint = px.density_heatmap(
+        df_raw, x="Max_Temp_C", y="Relative_Humidity_Pct",
+        nbinsx=15, nbinsy=15, color_continuous_scale="Viridis",
+        title="Joint Density of Temperature vs Humidity"
+    )
+    st.plotly_chart(fig_joint, use_container_width=True)
+
+# ==========================================
+# TAB 5: MEMBER 5 - TIME SERIES & RANDOM PROCESS
+# ==========================================
+with tabs[4]:
+    st.markdown("### ⏳ Tab 5: Temperature as a Random Process & Autocorrelation")
+    st.caption("Responsible: **Member 5 (Time Series & Random Process Lead)** | Presentation Slot: **Min 4:30 – 5:30**")
+    
+    acf_df, ci_bound, acf_steps = compute_autocorrelation(df_raw['Max_Temp_C'], max_lags=7)
+    stat_eval = analyze_stationarity(df_raw, window=7)
+    
+    t_c1, t_c2 = st.columns([1, 2])
+    
+    with t_c1:
+        st.subheader("1. Sample Autocorrelation Function (ACF)")
+        st.dataframe(acf_df, use_container_width=True)
+        
+        st.markdown("<div class='formula-box'>", unsafe_allow_html=True)
+        st.latex(acf_steps['acf_formula'])
+        st.latex(acf_steps['lag1_sub'])
+        st.latex(acf_steps['ci_formula'])
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with t_c2:
+        st.subheader("2. Autocorrelation Correlogram (Lags 1 to 7)")
+        fig_acf = go.Figure()
+        fig_acf.add_trace(go.Bar(
+            x=acf_df['Lag (Days)'], y=acf_df['Autocorrelation (rk)'],
+            name='Sample Autocorrelation r_k', marker_color='#3B82F6', width=0.4
+        ))
+        fig_acf.add_hline(y=ci_bound, line_dash="dash", line_color="#EF4444", annotation_text="+95% CI")
+        fig_acf.add_hline(y=-ci_bound, line_dash="dash", line_color="#EF4444", annotation_text="-95% CI")
+        fig_acf.add_hline(y=0.0, line_color="#94A3B8")
+        
+        fig_acf.update_layout(
+            xaxis_title="Lag k (Days)", yaxis_title="Autocorrelation Coefficient (rk)",
+            yaxis_range=[-0.4, 1.0], height=320
+        )
+        st.plotly_chart(fig_acf, use_container_width=True)
+
+    st.markdown("---")
+    st.subheader("3. Weak Stationarity Analysis & Multi-Day Persistence")
+    
+    s_col1, s_col2 = st.columns(2)
+    with s_col1:
+        st.markdown(f"""
+        - **7-Day Rolling Mean Spread:** {stat_eval['mean_diff']} °C
+        - **7-Day Rolling Std Dev Spread:** {stat_eval['std_diff']} °C
+        - **Statistical Evaluation:** **{stat_eval['judgment']}**
+        """)
+        st.markdown("**Detected Heatwave Streaks (≥ 40°C for ≥ 2 Days):**")
+        st.dataframe(streak_df, use_container_width=True)
+        
+    with s_col2:
+        fig_roll = go.Figure()
+        fig_roll.add_trace(go.Scatter(x=df_raw['Date'], y=df_raw['Max_Temp_C'], mode='lines', name='Daily Max Temp', line=dict(color='#CBD5E1', width=1)))
+        fig_roll.add_trace(go.Scatter(x=df_raw['Date'], y=stat_eval['rolling_mean'], mode='lines', name='7-Day Rolling Mean', line=dict(color='#F97316', width=2.5)))
+        fig_roll.update_layout(title="Stationarity Test: 7-Day Rolling Mean Drift", xaxis_title="Date", yaxis_title="Temp (°C)", height=280)
+        st.plotly_chart(fig_roll, use_container_width=True)
+
+# ==========================================
+# TAB 6: MEMBER 6 - AI DECISION ENGINE, EARLY WARNING & REPORT
+# ==========================================
+with tabs[5]:
+    st.markdown("### 🚨 Tab 6: AI Decision Engine & Early Warning System")
+    st.caption("Responsible: **Member 6 (AI Decision Engine & UI Lead - You!)** | Presentation Slot: **Min 5:30 – 6:45**")
     
     # Alert Status Banner
     alert_box_html = f"""
@@ -195,29 +489,21 @@ with tabs[0]:
     with c_left:
         st.subheader("📈 Temperature Telemetry vs IMD Warning Thresholds")
         fig_ts = go.Figure()
-        
-        # Historical Max Temp
         fig_ts.add_trace(go.Scatter(
             x=df_raw['Date'], y=df_raw['Max_Temp_C'],
             mode='lines+markers', name='Observed Max Temp',
-            line=dict(color='#2563EB', width=2),
-            marker=dict(size=5)
+            line=dict(color='#2563EB', width=2), marker=dict(size=5)
         ))
-        
-        # Heat Index
         fig_ts.add_trace(go.Scatter(
             x=df_raw['Date'], y=df_raw['Heat_Index_C'],
             mode='lines', name='NOAA Heat Index',
             line=dict(color='#DC2626', width=1.5, dash='dash')
         ))
-        
-        # Threshold Bands
         fig_ts.add_hline(y=40.0, line_dash="dot", line_color="#CA8A04", annotation_text="Heatwatch (40°C)", annotation_position="top left")
         fig_ts.add_hline(y=42.0, line_dash="dot", line_color="#EA580C", annotation_text="Severe Alert (42°C)", annotation_position="top left")
         fig_ts.add_hline(y=45.0, line_dash="dot", line_color="#DC2626", annotation_text="Extreme Emergency (45°C)", annotation_position="top left")
-        
         fig_ts.update_layout(
-            height=380, margin=dict(l=20, r=20, t=30, b=20),
+            height=360, margin=dict(l=20, r=20, t=30, b=20),
             xaxis_title="Date", yaxis_title="Temperature (°C)",
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
         )
@@ -228,388 +514,18 @@ with tabs[0]:
         for act in ai_decision['actions']:
             st.markdown(f"- {act}")
             
-        st.info("💡 **Demonstration Tip for IA-1:** Move the 'Temperature Offset' slider in the left sidebar to show the professor how the statistical thresholds dynamically elevate the AI warning tier from Green to Red!")
-
-# ==========================================
-# TAB 2: MEMBER 1 - DATA ENGINEERING & FREQUENCY TABLES
-# ==========================================
-with tabs[1]:
-    st.markdown("### 📊 Module 1: Data Hygiene, Ingestion & Frequency Distribution")
-    st.caption("Responsible: **Member 1 (Data Engineer & Ingestion Lead)** | Topic: Data Classification, Outlier Removal, Class Intervals")
-    
-    col1, col2 = st.columns([1, 2])
-    
-    with col1:
-        st.subheader("1. Data Hygiene & Outlier Detection")
-        outliers = detect_outliers_iqr(df_raw['Max_Temp_C'])
-        
-        st.markdown(f"""
-        - **Total Observations ($N$):** {len(df_raw)} days
-        - **First Quartile ($Q_1$):** {outliers['q1']} °C
-        - **Third Quartile ($Q_3$):** {outliers['q3']} °C
-        - **Interquartile Range ($IQR$):** {outliers['iqr']} °C
-        - **Lower Fence ($Q_1 - 1.5 \\times IQR$):** {outliers['lower_bound']} °C
-        - **Upper Fence ($Q_3 + 1.5 \\times IQR$):** {outliers['upper_bound']} °C
-        - **Identified Outliers:** {outliers['outlier_count']} observations {outliers['outlier_values']}
-        """)
-        
-        st.markdown("<div class='formula-box'>", unsafe_allow_html=True)
-        st.latex(r"IQR = Q_3 - Q_1")
-        st.latex(rf"\text{{IQR}} = {outliers['q3']} - {outliers['q1']} = {outliers['iqr']}^\circ\text{{C}}")
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with col2:
-        st.subheader("2. Continuous Frequency Distribution Table")
-        num_bins = st.slider("Select Number of Class Intervals (Bins)", 5, 10, 7)
-        freq_df, bin_edges = generate_frequency_distribution(df_raw['Max_Temp_C'], num_bins=num_bins)
-        
-        st.dataframe(freq_df, use_container_width=True)
-        
-        st.markdown("<div class='formula-box'>", unsafe_allow_html=True)
-        st.markdown(rf"**Verification:** $\sum f_i = {freq_df['Frequency (fi)'].sum()}$ (Matches $N = {len(df_raw)}$) | $\sum f_i x_i = {freq_df['fi * xi'].sum():.2f}$")
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    # Graphical Frequency Visualization
     st.markdown("---")
-    st.subheader("3. Graphical Representations: Histogram & Ogive Curve")
-    g_col1, g_col2 = st.columns(2)
+    st.subheader("📑 Final Assessment Submission & Group Roster")
     
-    with g_col1:
-        fig_hist = px.histogram(
-            df_raw, x="Max_Temp_C", nbins=num_bins,
-            title="Histogram of Daily Maximum Temperature",
-            labels={'Max_Temp_C': 'Max Temperature (°C)'},
-            color_discrete_sequence=['#3B82F6']
-        )
-        st.plotly_chart(fig_hist, use_container_width=True)
-        
-    with g_col2:
-        fig_ogive = go.Figure()
-        fig_ogive.add_trace(go.Scatter(
-            x=freq_df['Upper Limit (U)'], y=freq_df['Cumulative Freq (cf)'],
-            mode='lines+markers', name='Less-than Ogive',
-            line=dict(color='#10B981', width=2)
-        ))
-        fig_ogive.update_layout(
-            title="Cumulative Frequency (Less-than Ogive) Curve",
-            xaxis_title="Upper Class Boundary (°C)", yaxis_title="Cumulative Frequency (cf)"
-        )
-        st.plotly_chart(fig_ogive, use_container_width=True)
-
-# ==========================================
-# TAB 3: MEMBER 2 - DESCRIPTIVE STATS & DISPERSION
-# ==========================================
-with tabs[2]:
-    st.markdown("### 📐 Module 2: Central Tendency & Measures of Dispersion")
-    st.caption("Responsible: **Member 2 (Descriptive Statistics Lead)** | Topic: Mean, Median, Mode, Variance, Standard Deviation, CV")
-    
-    # Ungrouped vs Grouped Summary Cards
-    grouped_stats = compute_grouped_stats(freq_df)
-    
-    d_c1, d_c2, d_c3, d_c4 = st.columns(4)
-    with d_c1:
-        st.metric("Sample Mean (x̄)", f"{stat_summary['mean']} °C", f"Grouped: {grouped_stats['grouped_mean']} °C")
-    with d_c2:
-        st.metric("Median (Md)", f"{stat_summary['median']} °C", f"Grouped: {grouped_stats['grouped_median']} °C")
-    with d_c3:
-        st.metric("Std Deviation (s)", f"{stat_summary['std_dev']} °C", f"Variance: {stat_summary['variance']}")
-    with d_c4:
-        st.metric("Coeff of Variation (CV)", f"{stat_summary['cv']} %", "Thermal Volatility")
-
-    st.markdown("---")
-    st.subheader("Step-by-Step Numerical Derivations (Manual Substitution)")
-    st.write("Demonstrating mathematical correctness as required by IA-1 evaluation criteria:")
-    
-    s_col1, s_col2 = st.columns(2)
-    
-    with s_col1:
-        st.markdown("**1. Sample Mean Calculation:**")
-        st.latex(stat_summary['steps']['mean_formula'])
-        st.latex(stat_summary['steps']['mean_sub'])
-        
-        st.markdown("**2. Sample Variance Calculation:**")
-        st.latex(stat_summary['steps']['variance_formula'])
-        st.latex(stat_summary['steps']['variance_sub'])
-
-    with s_col2:
-        st.markdown("**3. Standard Deviation Calculation:**")
-        st.latex(stat_summary['steps']['std_formula'])
-        st.latex(stat_summary['steps']['std_sub'])
-        
-        st.markdown("**4. Coefficient of Variation (CV) Calculation:**")
-        st.latex(stat_summary['steps']['cv_formula'])
-        st.latex(stat_summary['steps']['cv_sub'])
-        
-    st.markdown("<div class='formula-box'>", unsafe_allow_html=True)
-    st.markdown(rf"""
-    **Engineering Interpretation:**
-    - A Coefficient of Variation of **{stat_summary['cv']}%** indicates relative thermal stability in the baseline, but the spread ($s = {stat_summary['std_dev']}^\circ\text{{C}}$) is large enough that a positive $2\sigma$ departure pushes the region straight into severe heatwave territory.
-    - Grouped Mean (${grouped_stats['grouped_mean']}^\circ\text{{C}}$) closely approximates Ungrouped Mean (${stat_summary['mean']}^\circ\text{{C}}$), verifying negligible grouping error.
-    """)
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Box plot
-    st.subheader("Box-and-Whisker Dispersion Diagram")
-    fig_box = px.box(df_raw, y="Max_Temp_C", points="all", title="Temperature Dispersion & Quartile Distribution")
-    st.plotly_chart(fig_box, use_container_width=True)
-
-# ==========================================
-# TAB 4: MEMBER 3 - EXTREME VALUE & NORMAL DISTRIBUTION
-# ==========================================
-with tabs[3]:
-    st.markdown("### 🔔 Module 3: Variability & Extreme Temperature Analysis")
-    st.caption("Responsible: **Member 3 (Probability & Normal Distribution Specialist)** | Topic: Gaussian Fitting, Z-Score, Tail Exceedance")
-    
-    p_col1, p_col2 = st.columns([1, 2])
-    
-    with p_col1:
-        st.subheader("1. Gaussian Distribution Parameters")
-        st.markdown(rf"""
-        - **Fitted Mean ($\mu$):** {norm_params['mu']} °C
-        - **Fitted Std Dev ($\sigma$):** {norm_params['sigma']} °C
-        - **Variance ($\sigma^2$):** {norm_params['variance']} (°C)²
-        """)
-        
-        st.markdown("---")
-        st.subheader("2. Interactive Threshold Probability")
-        user_thresh = st.slider("Select Temperature Threshold (°C)", 36.0, 48.0, 41.0, 0.5)
-        user_res = calculate_exceedance_probability(user_thresh, norm_params['mu'], norm_params['sigma'])
-        
-        st.markdown("<div class='formula-box'>", unsafe_allow_html=True)
-        st.latex(user_res['steps']['z_formula'])
-        st.latex(user_res['steps']['z_sub'])
-        st.latex(user_res['steps']['prob_formula'])
-        st.latex(user_res['steps']['prob_sub'])
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with p_col2:
-        st.subheader("3. Fitted Normal Distribution & Critical Tail Area")
-        x_norm, y_norm = generate_normal_curve_data(norm_params['mu'], norm_params['sigma'])
-        
-        fig_norm = go.Figure()
-        
-        # Base Normal Curve
-        fig_norm.add_trace(go.Scatter(
-            x=x_norm, y=y_norm, mode='lines', name=f"N({norm_params['mu']}, {norm_params['sigma']}²)",
-            line=dict(color='#2563EB', width=2.5)
-        ))
-        
-        # Shaded Critical Area for User Threshold
-        mask = x_norm >= user_thresh
-        if np.any(mask):
-            fig_norm.add_trace(go.Scatter(
-                x=np.concatenate([[user_thresh], x_norm[mask], [x_norm[mask][-1]]]),
-                y=np.concatenate([[0], y_norm[mask], [0]]),
-                fill='toself', fillcolor='rgba(220, 38, 38, 0.4)',
-                line=dict(color='rgba(220, 38, 38, 0)'),
-                name=f"P(T ≥ {user_thresh}°C) = {user_res['percentage']}%"
-            ))
-            
-        fig_norm.add_vline(x=user_thresh, line_dash="dash", line_color="#DC2626")
-        fig_norm.update_layout(
-            title=f"Normal Curve Probability Density Function (Shaded Area = {user_res['percentage']}%)",
-            xaxis_title="Maximum Temperature (°C)", yaxis_title="Probability Density f(x)"
-        )
-        st.plotly_chart(fig_norm, use_container_width=True)
-
-    # Standard IMD Threshold Table
-    st.subheader("4. Standard IMD Operational Risk Probabilities")
-    std_risks = get_standard_imd_threshold_risks(norm_params['mu'], norm_params['sigma'])
-    risk_summary_df = pd.DataFrame([{
-        'Threshold Level': f"{r['threshold']} °C",
-        'Z-Score': r['z_score'],
-        'P(X ≥ T)': f"{r['probability']:.4f}",
-        'Probability (%)': f"{r['percentage']}%",
-        'Risk Category': 'Moderate' if r['threshold'] < 40 else 'Severe Heatwave' if r['threshold'] < 45 else 'Extreme Catastrophe'
-    } for r in std_risks])
-    st.table(risk_summary_df)
-
-# ==========================================
-# TAB 5: MEMBER 4 - BAYESIAN INFERENCE & CONDITIONAL PROBABILITY
-# ==========================================
-with tabs[4]:
-    st.markdown("### 🎲 Module 4: Conditional Probability & Bayesian Heatwave Inference")
-    st.caption("Responsible: **Member 4 (Conditional Probability & Bayes' Inference Lead)** | Topic: Joint/Marginal Tables, Bayes' Sensor Update, Heat Index")
-    
-    b_col1, b_col2 = st.columns(2)
-    
-    with b_col1:
-        st.subheader("1. Joint & Marginal Contingency Table")
-        jm_data = compute_joint_marginal_tables(df_raw)
-        st.markdown("**Contingency Table: Counts**")
-        st.dataframe(jm_data['cross_tab'], use_container_width=True)
-        
-        st.markdown("**Joint & Marginal Probabilities (%)**")
-        st.dataframe(jm_data['prob_tab'], use_container_width=True)
-        
-        st.markdown("<div class='formula-box'>", unsafe_allow_html=True)
-        st.latex(r"P(\text{Heatwave} \mid \text{High Humidity}) = \frac{n(\text{Heatwave} \cap \text{High Hum})}{n(\text{High Hum})}")
-        st.latex(rf"= \frac{{{jm_data['n_both']}}}{{{jm_data['n_high_hum']}}} = {jm_data['cond_prob']:.4f}\ ({jm_data['cond_prob']*100:.1f}\%)")
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with b_col2:
-        st.subheader("2. Bayes' Theorem: AI/IoT Sensor Belief Update")
-        st.write("An IoT Weather Station flags a Heatwave Alert ($S$). How likely is an actual heatwave ($H$)?")
-        
-        sens = st.slider("Sensor Sensitivity P(S | H) (True Positive Rate)", 0.70, 0.99, 0.92, 0.01)
-        fpr = st.slider("Sensor False Alarm Rate P(S | ~H)", 0.01, 0.30, 0.08, 0.01)
-        
-        prior_h = jm_data['prior_heatwave']
-        bayes_res = compute_bayes_sensor_update(prior_h, sensitivity=sens, false_positive_rate=fpr)
-        
-        st.markdown("<div class='formula-box'>", unsafe_allow_html=True)
-        st.latex(bayes_res['steps']['bayes_formula'])
-        st.latex(bayes_res['steps']['bayes_sub'])
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        st.success(f"**Bayesian Result:** Given a sensor alarm, the posterior probability of a real heatwave jumps from prior **{prior_h*100:.1f}%** to **{bayes_res['posterior_pct']}%**!")
-
-    # 2D Heatmap of Temp vs Humidity
-    st.markdown("---")
-    st.subheader("3. 2D Joint Distribution Heatmap (Temperature vs Relative Humidity)")
-    fig_joint = px.density_heatmap(
-        df_raw, x="Max_Temp_C", y="Relative_Humidity_Pct",
-        nbinsx=15, nbinsy=15, color_continuous_scale="Viridis",
-        title="Joint Density of Temperature vs Humidity"
-    )
-    st.plotly_chart(fig_joint, use_container_width=True)
-
-# ==========================================
-# TAB 6: MEMBER 5 - TIME SERIES & RANDOM PROCESS
-# ==========================================
-with tabs[5]:
-    st.markdown("### ⏳ Module 5: Temperature as a Random Process & Autocorrelation")
-    st.caption("Responsible: **Member 5 (Time Series & Random Process Lead)** | Topic: Autocorrelation (ACF), Stationarity, Thermal Memory")
-    
-    acf_df, ci_bound, acf_steps = compute_autocorrelation(df_raw['Max_Temp_C'], max_lags=7)
-    stat_eval = analyze_stationarity(df_raw, window=7)
-    
-    t_c1, t_c2 = st.columns([1, 2])
-    
-    with t_c1:
-        st.subheader("1. Sample Autocorrelation Function (ACF)")
-        st.dataframe(acf_df, use_container_width=True)
-        
-        st.markdown("<div class='formula-box'>", unsafe_allow_html=True)
-        st.latex(acf_steps['acf_formula'])
-        st.latex(acf_steps['lag1_sub'])
-        st.latex(acf_steps['ci_formula'])
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with t_c2:
-        st.subheader("2. Autocorrelation Correlogram (Lags 1 to 7)")
-        fig_acf = go.Figure()
-        
-        # Bars for r_k
-        fig_acf.add_trace(go.Bar(
-            x=acf_df['Lag (Days)'], y=acf_df['Autocorrelation (rk)'],
-            name='Sample Autocorrelation r_k', marker_color='#3B82F6', width=0.4
-        ))
-        
-        # 95% Confidence Bounds
-        fig_acf.add_hline(y=ci_bound, line_dash="dash", line_color="#EF4444", annotation_text="+95% CI")
-        fig_acf.add_hline(y=-ci_bound, line_dash="dash", line_color="#EF4444", annotation_text="-95% CI")
-        fig_acf.add_hline(y=0.0, line_color="#94A3B8")
-        
-        fig_acf.update_layout(
-            xaxis_title="Lag k (Days)", yaxis_title="Autocorrelation Coefficient (rk)",
-            yaxis_range=[-0.4, 1.0], height=320
-        )
-        st.plotly_chart(fig_acf, use_container_width=True)
-
-    st.markdown("---")
-    st.subheader("3. Weak Stationarity Analysis & Multi-Day Persistence")
-    
-    s_col1, s_col2 = st.columns(2)
-    with s_col1:
-        st.markdown(f"""
-        - **7-Day Rolling Mean Spread:** {stat_eval['mean_diff']} °C
-        - **7-Day Rolling Std Dev Spread:** {stat_eval['std_diff']} °C
-        - **Statistical Evaluation:** **{stat_eval['judgment']}**
-        """)
-        
-        # Detected heatwave streaks table
-        st.markdown("**Detected Heatwave Streaks (≥ 40°C for ≥ 2 Days):**")
-        st.dataframe(streak_df, use_container_width=True)
-        
-    with s_col2:
-        fig_roll = go.Figure()
-        fig_roll.add_trace(go.Scatter(x=df_raw['Date'], y=df_raw['Max_Temp_C'], mode='lines', name='Daily Max Temp', line=dict(color='#CBD5E1', width=1)))
-        fig_roll.add_trace(go.Scatter(x=df_raw['Date'], y=stat_eval['rolling_mean'], mode='lines', name='7-Day Rolling Mean', line=dict(color='#F97316', width=2.5)))
-        fig_roll.update_layout(title="Stationarity Test: 7-Day Rolling Mean Drift", xaxis_title="Date", yaxis_title="Temp (°C)", height=280)
-        st.plotly_chart(fig_roll, use_container_width=True)
-
-# ==========================================
-# TAB 7: INVESTIGATION SHEET & TEAM DIVISION
-# ==========================================
-with tabs[6]:
-    st.markdown("### 📑 Official Statistical Investigation Sheet & Group Roster")
-    st.caption("Responsible: **Member 6 (AI Decision Engine & UI Lead)** | Formal Submission Document for IA-1")
-    
-    st.markdown("""
-    #### 🎓 Somaiya Vidyavihar University | K J Somaiya College of Engineering
-    **Course:** Statistical Methods and Probability (S.Y. B.Tech)  
-    **Evaluation:** IA-1 Group Statistical Investigation & Interactive Demonstration (Total: 20 Marks)  
-    **Theme:** STAT-AI Engineering Challenge — *From Data to Decision*
-    """)
-    
-    st.markdown("---")
-    
-    st.subheader("👥 6-Member Role & Viva Responsibility Matrix")
     team_table = pd.DataFrame([
-        {
-            "Member": "Member 1",
-            "Role": "Data Engineering Lead",
-            "Assigned Module": "modules/data_loader.py",
-            "Syllabus Topic": "Data hygiene, Outlier Detection (IQR), Frequency Distribution, Ogive",
-            "Presentation Timing": "Min 0:00 - 1:00",
-            "Core Viva Question": "Explain how IQR identifies temperature anomalies and why frequency tables choose 7 bins."
-        },
-        {
-            "Member": "Member 2",
-            "Role": "Descriptive Statistics Lead",
-            "Assigned Module": "modules/descriptive_stats.py",
-            "Syllabus Topic": "Central Tendency (Mean, Median, Mode), Variance, Std Dev, CV",
-            "Presentation Timing": "Min 1:00 - 2:00",
-            "Core Viva Question": "Why is CV unitless, and why use N-1 in sample variance instead of N?"
-        },
-        {
-            "Member": "Member 3",
-            "Role": "Probability & Extreme Value Lead",
-            "Assigned Module": "modules/extreme_value_analysis.py",
-            "Syllabus Topic": "Gaussian Fitting, Standard Normal Variable Z, Tail Exceedance P(T ≥ 40)",
-            "Presentation Timing": "Min 2:00 - 3:15",
-            "Core Viva Question": "What does a Z-score of +2.1 imply for heatwave probability under the Gaussian curve?"
-        },
-        {
-            "Member": "Member 4",
-            "Role": "Bayesian Inference Specialist",
-            "Assigned Module": "modules/bayesian_inference.py",
-            "Syllabus Topic": "Joint & Marginal Tables, Conditional Probability, Bayes' Sensor Update",
-            "Presentation Timing": "Min 3:15 - 4:30",
-            "Core Viva Question": "How does Bayes' theorem update the probability of a heatwave given an IoT sensor alert?"
-        },
-        {
-            "Member": "Member 5",
-            "Role": "Time Series & Random Process Lead",
-            "Assigned Module": "modules/time_series_process.py",
-            "Syllabus Topic": "Random Process, Autocorrelation Function (ACF), Stationarity, Streaks",
-            "Presentation Timing": "Min 4:30 - 5:30",
-            "Core Viva Question": "Why is autocorrelation r_1 > 0.5 critical for predicting heatwaves as persistent multi-day spells?"
-        },
-        {
-            "Member": "Member 6",
-            "Role": "AI Decision Engine & UI Lead",
-            "Assigned Module": "modules/decision_engine.py & app.py",
-            "Syllabus Topic": "AI Early Warning Decision Matrix, IMD Tiers, Municipal Directives",
-            "Presentation Timing": "Min 5:30 - 6:45",
-            "Core Viva Question": "How does the AI system synthesize statistical probabilities into actionable municipal directives?"
-        }
+        {"Tab": "Tab 1", "Member": "Member 1", "Role": "Data Engineering Lead", "Topic": "IQR Outliers, 7-Bin Frequency Table, Ogive", "Time": "0:00–1:00"},
+        {"Tab": "Tab 2", "Member": "Member 2", "Role": "Descriptive Statistics Lead", "Topic": "Mean, Median, Variance, Std Dev, CV", "Time": "1:00–2:00"},
+        {"Tab": "Tab 3", "Member": "Member 3", "Role": "Probability & Extreme Value Lead", "Topic": "Gaussian Fitting, Z-scores, P(T ≥ 40°C)", "Time": "2:00–3:15"},
+        {"Tab": "Tab 4", "Member": "Member 4", "Role": "Bayesian Inference Specialist", "Topic": "Joint Tables, Conditional Prob, Bayes' Sensor Update", "Time": "3:15–4:30"},
+        {"Tab": "Tab 5", "Member": "Member 5", "Role": "Time Series & Random Process Lead", "Topic": "Random Process, Autocorrelation ACF, Streaks", "Time": "4:30–5:30"},
+        {"Tab": "Tab 6", "Member": "Member 6 (You)", "Role": "AI Decision Engine & UI Lead", "Topic": "AI Early Warning Matrix, Municipal Directives, Simulation", "Time": "5:30–6:45"}
     ])
     st.dataframe(team_table, use_container_width=True)
-    
-    st.markdown("---")
-    st.subheader("📥 Export Complete Investigation Report")
     
     report_text = f"""
 ================================================================================
@@ -624,8 +540,8 @@ maximum temperatures and issue multi-tier municipal advisories (Green, Yellow,
 Orange, Red) before extreme heat events threaten public health.
 
 2. DATASET DESCRIPTION:
-- Source: India Meteorological Department (IMD) / Open Government Data Platform India
-- Number of Observations: {len(df_raw)} daily records
+- Source: India Meteorological Department (IMD) / data.gov.in
+- Observations: {len(df_raw)} daily summer records
 - Key Variables: Date, Max_Temp_C, Min_Temp_C, Relative_Humidity_Pct, Heat_Index_C
 
 3. STATISTICAL SUMMARY & MATHEMATICAL RESULTS:
@@ -649,7 +565,7 @@ Orange, Red) before extreme heat events threaten public health.
 ================================================================================
 """
     st.download_button(
-        label="📄 Download Statistical Investigation Summary (.txt)",
+        label="📄 Download Official Statistical Investigation Sheet (.txt)",
         data=report_text,
         file_name="G1_HeatwaveMonitoring_StatAI_IA1_Report.txt",
         mime="text/plain"
