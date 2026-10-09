@@ -301,9 +301,12 @@ with tab6:
         gauge_bar_color = "#DC2626"
         tier_emoji = "🔴"
         rationale = f"Severe thermal disaster threshold breached! Effective temperature ({effective_temp:.1f}°C) and Heat Index ({sim_heat_index:.1f}°C) create acute, life-threatening heatstroke conditions."
-        hosp_beds = "+180 dedicated ICU beds"
-        water_surge = "+40% tanker dispatches"
-        power_surge = "+32% cooling load (overload risk)"
+        hosp_val = "+180 Beds"
+        hosp_desc = "Dedicated Heatstroke ICU Capacity"
+        water_val = "+40% Volume"
+        water_desc = "Emergency Tanker Fleet Mobilization"
+        power_val = "+32% Load"
+        power_desc = "Grid AC Surge — Overload Risk"
         directives = [
             "🚨 Immediate red alert broadcast via municipal disaster SMS & radio bulletins.",
             "🏥 Hospital Emergency Protocol: Activate dedicated air-conditioned heatstroke ICU triage centers.",
@@ -320,9 +323,12 @@ with tab6:
         gauge_bar_color = "#EA580C"
         tier_emoji = "🟠"
         rationale = f"Official IMD heatwave criteria breached. Sustained thermal accumulation ({effective_temp:.1f}°C) poses severe danger to vulnerable populations."
-        hosp_beds = "+85 hydration & triage beds"
-        water_surge = "+25% tanker dispatches"
-        power_surge = "+18% cooling load"
+        hosp_val = "+85 Beds"
+        hosp_desc = "Casualty Ward Hydration & Ice Packs"
+        water_val = "+25% Volume"
+        water_desc = "Transit Kiosks & Pyaaos Active"
+        power_val = "+18% Load"
+        power_desc = "Substation Peak AC Load Management"
         directives = [
             "⚠️ Issue Orange Alert for high-risk demographics (infants, elderly, chronic illness patients).",
             "🏥 Hospitals: Stock emergency reserves of ORS packets, IV fluids, and ice packs in casualty departments.",
@@ -338,9 +344,12 @@ with tab6:
         gauge_bar_color = "#CA8A04"
         tier_emoji = "🟡"
         rationale = f"Elevated temperature ({effective_temp:.1f}°C). Precautionary heat stress advisory active before heatwave thresholds are breached."
-        hosp_beds = "+30 outpatient triage beds"
-        water_surge = "+12% tanker dispatches"
-        power_surge = "+8% cooling load"
+        hosp_val = "+30 Beds"
+        hosp_desc = "Primary Health Clinic Triage"
+        water_val = "+12% Volume"
+        water_desc = "Municipal Standby Water Reserves"
+        power_val = "+8% Load"
+        power_desc = "Precautionary AC Regulation Advisory"
         directives = [
             "🟡 Issue public health warnings on municipal weather portals and local radios.",
             "💧 Check urban drinking water supply lines and ensure park fountains operate.",
@@ -355,9 +364,12 @@ with tab6:
         gauge_bar_color = "#16A34A"
         tier_emoji = "🟢"
         rationale = f"Climatic parameters within safe seasonal limits. Temperature ({effective_temp:.1f}°C) poses minimal public health hazard."
-        hosp_beds = "Standard baseline capacity"
-        water_surge = "Normal municipal volume"
-        power_surge = "Standard baseline demand"
+        hosp_val = "Baseline (0)"
+        hosp_desc = "Standard Hospital Ward Capacity"
+        water_val = "Baseline (0%)"
+        water_desc = "Standard Municipal Supply Flow"
+        power_val = "Baseline (0%)"
+        power_desc = "Normal Electrical Grid Operating Load"
         directives = [
             "✅ Standard seasonal meteorological monitoring active.",
             "📊 Routine telemetry logging continues."
@@ -373,11 +385,19 @@ with tab6:
         fig_gauge = go.Figure(go.Indicator(
             mode="gauge+number",
             value=hazard_score,
-            domain={'x': [0, 1], 'y': [0, 1]},
-            title={'text': "<b>THERMAL HAZARD INDEX</b><br><span style='font-size:0.8em;color:gray'>Dynamic AI Risk Score (0-100)</span>", 'font': {'size': 16}},
+            domain={'x': [0.08, 0.92], 'y': [0.10, 0.92]},
+            title={'text': "<b>THERMAL HAZARD INDEX</b><br><span style='font-size:0.8em;color:#64748B'>Risk Scale (0 to 100)</span>", 'font': {'size': 15, 'color': '#0F172A'}},
             gauge={
-                'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "#475569"},
-                'bar': {'color': gauge_bar_color, 'thickness': 0.32},
+                'axis': {
+                    'range': [0, 100],
+                    'tickmode': 'array',
+                    'tickvals': [0, 20, 40, 60, 80, 100],
+                    'ticktext': ['0', '20', '40', '60', '80', '100'],
+                    'tickwidth': 2,
+                    'tickcolor': "#334155",
+                    'tickfont': {'size': 14, 'color': '#0F172A', 'family': 'sans-serif'}
+                },
+                'bar': {'color': gauge_bar_color, 'thickness': 0.30},
                 'bgcolor': "white",
                 'borderwidth': 2,
                 'bordercolor': "#CBD5E1",
@@ -394,7 +414,7 @@ with tab6:
                 }
             }
         ))
-        fig_gauge.update_layout(height=280, margin=dict(l=15, r=15, t=40, b=15))
+        fig_gauge.update_layout(height=330, margin=dict(l=35, r=35, t=55, b=35))
         st.plotly_chart(fig_gauge, use_container_width=True)
 
     with banner_col:
@@ -425,13 +445,37 @@ with tab6:
 
     imp1, imp2, imp3, imp4 = st.columns(4)
     with imp1:
-        st.metric(label="Simulated Max Temp", value=f"{effective_temp:.1f} °C", delta=f"{effective_temp - latest_temp:+.1f} °C vs latest")
+        st.markdown(f"""
+        <div style="background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 10px; padding: 1rem; border-left: 5px solid #2563EB; min-height: 120px;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #64748B; text-transform: uppercase;">🌡️ Effective Temp</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #0F172A; margin: 0.2rem 0;">{effective_temp:.1f} °C</div>
+            <div style="font-size: 0.85rem; color: #475569;">Heat Index: <strong>{sim_heat_index:.1f} °C</strong></div>
+        </div>
+        """, unsafe_allow_html=True)
     with imp2:
-        st.metric(label="Hospital Triage Demand", value=hosp_beds, delta="Emergency beds")
+        st.markdown(f"""
+        <div style="background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 10px; padding: 1rem; border-left: 5px solid #DC2626; min-height: 120px;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #64748B; text-transform: uppercase;">🏥 Hospital Triage</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #0F172A; margin: 0.2rem 0;">{hosp_val}</div>
+            <div style="font-size: 0.85rem; color: #475569;">{hosp_desc}</div>
+        </div>
+        """, unsafe_allow_html=True)
     with imp3:
-        st.metric(label="Water Tanker Demand", value=water_surge, delta="Municipal volume")
+        st.markdown(f"""
+        <div style="background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 10px; padding: 1rem; border-left: 5px solid #0284C7; min-height: 120px;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #64748B; text-transform: uppercase;">💧 Water Tankers</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #0F172A; margin: 0.2rem 0;">{water_val}</div>
+            <div style="font-size: 0.85rem; color: #475569;">{water_desc}</div>
+        </div>
+        """, unsafe_allow_html=True)
     with imp4:
-        st.metric(label="Power Grid Surge", value=power_surge, delta="Cooling load")
+        st.markdown(f"""
+        <div style="background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 10px; padding: 1rem; border-left: 5px solid #D97706; min-height: 120px;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #64748B; text-transform: uppercase;">⚡ Power Grid Load</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #0F172A; margin: 0.2rem 0;">{power_val}</div>
+            <div style="font-size: 0.85rem; color: #475569;">{power_desc}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -490,9 +534,9 @@ METEOROLOGICAL PARAMETERS:
 - Baseline P(T >= 40°C): {prob_exceed_40_pct:.2f} %
 
 PROJECTED MUNICIPAL IMPACT:
-- Hospital Emergency Heatstroke Load: {hosp_beds}
-- Municipal Water Supply Surge: {water_surge}
-- Power Grid Cooling Load Surge: {power_surge}
+- Hospital Emergency Heatstroke Load: {hosp_val} ({hosp_desc})
+- Municipal Water Supply Surge: {water_val} ({water_desc})
+- Power Grid Cooling Load Surge: {power_val} ({power_desc})
 
 MANDATED CIVIL DIRECTIVES:
 {chr(10).join(['* ' + d for d in directives])}
@@ -508,18 +552,5 @@ STATISTICAL RATIONALE:
         mime="text/plain"
     )
 
-    st.markdown("---")
-
-    # 9. Team Showcase Summary Table
-    st.subheader("👥 Group Roster & Presentation Timeline (6–7 Mins)")
-    team_roster = pd.DataFrame([
-        {"Tab": "Tab 1", "Member": "Member 1", "Focus": "Data Hygiene, IQR Outliers, 7-Bin Frequency Table, Ogive", "Slot": "0:00 – 1:00 min"},
-        {"Tab": "Tab 2", "Member": "Member 2", "Focus": "Mean, Median, Sample Variance (s²), Std Dev (s), CV%", "Slot": "1:00 – 2:00 min"},
-        {"Tab": "Tab 3", "Member": "Member 3", "Focus": "Normal Distribution N(μ, σ²), Z-score, P(T ≥ 40°C), Bell Curve", "Slot": "2:00 – 3:15 min"},
-        {"Tab": "Tab 4", "Member": "Member 4", "Focus": "Joint Contingency Table, P(Heatwave | High Hum), Bayes' Theorem", "Slot": "3:15 – 4:30 min"},
-        {"Tab": "Tab 5", "Member": "Member 5", "Focus": "Random Process, Autocorrelation ACF (r1 to r7), 95% CI bound", "Slot": "4:30 – 5:30 min"},
-        {"Tab": "Tab 6", "Member": "Team Lead (You)", "Focus": "AI Decision Engine, IMD Alert Matrix, Municipal Directives", "Slot": "5:30 – 6:45 min"}
-    ])
-    st.dataframe(team_roster, use_container_width=True)
 
 
