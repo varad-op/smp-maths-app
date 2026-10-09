@@ -34,7 +34,7 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "🔔 Tab 3: Member 3 (Normal Distribution)",
     "🎲 Tab 4: Member 4 (Bayesian Inference)",
     "⏳ Tab 5: Member 5 (Random Process)",
-    "🚨 Tab 6: Member 6 (AI Decision Engine)"
+    "🚨 Tab 6: AI Decision Engine"
 ])
 
 # ==============================================================================
@@ -216,12 +216,10 @@ with tab5:
 
 
 # ==============================================================================
-# TAB 6: MEMBER 6 (AI DECISION ENGINE & EARLY WARNING SYSTEM - TEAM LEAD)
+# TAB 6: AI DECISION ENGINE & EARLY WARNING SYSTEM
 # ==============================================================================
 with tab6:
-    st.header("🚨 Member 6: AI Decision Engine & Early Warning System")
-    st.write("**Assigned Role:** AI Decision Engine & UI Lead (Team Lead) | **Presentation Slot:** Min 5:30 – 6:45")
-    
+    st.header("🚨 AI Decision Engine & Early Warning System")
     st.markdown("---")
     st.subheader("🎛️ Live Scenario Simulator & Real-Time Alert Trigger")
     st.caption("Drag the sliders below during your presentation to demonstrate the live AI decision engine to the professor:")
@@ -382,7 +380,7 @@ with tab6:
         {"Tab": "Tab 3", "Member": "Member 3", "Focus": "Normal Distribution N(μ, σ²), Z-score, P(T ≥ 40°C), Bell Curve", "Slot": "2:00 – 3:15 min"},
         {"Tab": "Tab 4", "Member": "Member 4", "Focus": "Joint Contingency Table, P(Heatwave | High Hum), Bayes' Theorem", "Slot": "3:15 – 4:30 min"},
         {"Tab": "Tab 5", "Member": "Member 5", "Focus": "Random Process, Autocorrelation ACF (r1 to r7), 95% CI bound", "Slot": "4:30 – 5:30 min"},
-        {"Tab": "Tab 6", "Member": "Member 6 (You)", "Focus": "AI Decision Engine, IMD Alert Matrix, Municipal Directives", "Slot": "5:30 – 6:45 min"}
+        {"Tab": "Tab 6", "Member": "Team Lead (You)", "Focus": "AI Decision Engine, IMD Alert Matrix, Municipal Directives", "Slot": "5:30 – 6:45 min"}
     ])
     st.dataframe(team_roster, use_container_width=True)
 
