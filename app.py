@@ -1,4 +1,4 @@
-﻿import streamlit as st
+import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -216,36 +216,165 @@ with tab5:
 
 
 # ==============================================================================
-# TAB 6: MEMBER 6 (AI DECISION ENGINE & EARLY WARNING SYSTEM)
+# TAB 6: MEMBER 6 (AI DECISION ENGINE & EARLY WARNING SYSTEM - TEAM LEAD)
 # ==============================================================================
 with tab6:
     st.header("🚨 Member 6: AI Decision Engine & Early Warning System")
     st.write("**Assigned Role:** AI Decision Engine & UI Lead (Team Lead) | **Presentation Slot:** Min 5:30 – 6:45")
     
-    st.markdown(r"""
-    #### 📝 What Member 6 needs to put here:
-    1. **Rule-Based AI Early Warning Matrix:** Map probabilities and temperatures to official IMD alert tiers:
-       - 🟢 **GREEN (Normal):** $T < 38^\circ\text{C}$
-       - 🟡 **YELLOW (Heat Watch):** $38^\circ\text{C} \le T < 40^\circ\text{C}$
-       - 🟠 **ORANGE (Heat Alert):** $40^\circ\text{C} \le T < 42^\circ\text{C}$
-       - 🔴 **RED (Severe Warning):** $T \ge 42^\circ\text{C}$ or Extreme Heat Index
-    2. **Municipal Action Directives:** Action list for hospitals, schools, outdoor workers, and water supplies.
-    3. **Live Demonstration:** Let the evaluator test a simulated temperature offset to see the alert trigger change!
-    """)
-    
     st.markdown("---")
-    st.subheader("💻 Member 6 Starter Code Area:")
+    st.subheader("🎛️ Live Scenario Simulator & Real-Time Alert Trigger")
+    st.caption("Drag the sliders below during your presentation to demonstrate the live AI decision engine to the professor:")
+
+    # 1. Interactive Simulation Controls
+    latest_temp = float(df['Max_Temp_C'].iloc[-1])
+    latest_rh = float(df['Relative_Humidity_Pct'].iloc[-1])
     
-    # --- TODO: MEMBER 6 WRITE YOUR AI DECISION ENGINE HERE ---
-    current_temp = float(df['Max_Temp_C'].iloc[-1])
+    sim_col1, sim_col2 = st.columns(2)
+    with sim_col1:
+        sim_temp = st.slider("Simulated Maximum Temperature (°C)", 32.0, 48.0, latest_temp, 0.5)
+    with sim_col2:
+        sim_rh = st.slider("Simulated Relative Humidity (%)", 20, 95, int(latest_rh), 1)
+
+    # Calculate Apparent Heat Index (NOAA Rothfusz regression approximation)
+    tf = sim_temp * 9/5 + 32
+    hif = 0.5 * (tf + 61.0 + ((tf - 68.0) * 1.2) + (sim_rh * 0.094))
+    if hif >= 80:
+        hif = (-42.379 + 2.04901523*tf + 10.14333127*sim_rh - 0.22475541*tf*sim_rh
+               - 0.00683783*tf*tf - 0.05481717*sim_rh*sim_rh + 0.00122874*tf*tf*sim_rh
+               + 0.00085282*tf*sim_rh*sim_rh - 0.00000199*tf*tf*sim_rh*sim_rh)
+    sim_heat_index = round((hif - 32) * 5/9, 1)
+
+    # Calculate Normal Distribution Exceedance Probability for the simulated temp
+    mu_temp = df['Max_Temp_C'].mean()
+    sigma_temp = df['Max_Temp_C'].std()
+    z_sim = (sim_temp - mu_temp) / sigma_temp
     
-    # Example alert logic
-    if current_temp >= 42.0:
-        st.error(f"🔴 RED ALERT ({current_temp:.1f}°C): Activate Hospital Heatstroke Emergency Protocol!")
-    elif current_temp >= 40.0:
-        st.warning(f"🟠 ORANGE ALERT ({current_temp:.1f}°C): Enforce afternoon outdoor construction ban (12-4 PM).")
-    elif current_temp >= 38.0:
-        st.info(f"🟡 YELLOW ALERT ({current_temp:.1f}°C): Issue public hydration and heat watch advisory.")
+    # Standard normal CDF approximation using error function
+    import math
+    prob_exceed = 1.0 - (0.5 * (1.0 + math.erf(z_sim / math.sqrt(2.0))))
+    prob_exceed_pct = max(0.0, min(100.0, prob_exceed * 100.0))
+
+    # 2. Multi-Tier AI Decision Matrix (IMD & NDMA Guidelines)
+    if sim_temp >= 42.0 or sim_heat_index >= 52.0 or prob_exceed_pct >= 35.0:
+        tier_name = "RED ALERT"
+        tier_title = "Severe Heatwave Warning (Extreme Emergency Action)"
+        tier_color = "#DC2626"
+        tier_emoji = "🔴"
+        rationale = f"Extreme thermal danger detected! Temperature ({sim_temp:.1f}°C) or Heat Index ({sim_heat_index:.1f}°C) creates severe physiological risk of heatstroke."
+        directives = [
+            "🚨 Immediate red alert broadcast via municipal disaster channels.",
+            "🏥 Hospital Emergency Protocol: Activate dedicated air-conditioned heatstroke ICU wards.",
+            "🚧 Labor Directive: Mandatory legal shutdown of outdoor construction from 11:30 AM to 4:00 PM.",
+            "💧 Water Utilities: Pre-position high-capacity water tankers in vulnerable informal settlements.",
+            "⚡ Power Grid Management: Ramp up grid spinning reserves to prevent transformer burnout under peak AC cooling loads."
+        ]
+    elif sim_temp >= 40.0 or sim_heat_index >= 45.0 or prob_exceed_pct >= 20.0:
+        tier_name = "ORANGE ALERT"
+        tier_title = "Heatwave Alert (Severe Action Required)"
+        tier_color = "#EA580C"
+        tier_emoji = "🟠"
+        rationale = f"High persistence conditions. Temperature ({sim_temp:.1f}°C) and Exceedance Probability ({prob_exceed_pct:.1f}%) indicate sustained heat danger."
+        directives = [
+            "⚠️ Issue Orange Alert for high-risk demographics (infants, elderly, chronic illness patients).",
+            "🏥 Hospitals: Stock emergency reserves of ORS packets, IV fluids, and ice packs.",
+            "🕒 Primary schools adjust afternoon timings; end all outdoor physical classes by 11:00 AM.",
+            "💧 Set up public drinking water kiosks ('Pyaaos') at railway stations and transit hubs."
+        ]
+    elif sim_temp >= 38.0 or sim_heat_index >= 40.0:
+        tier_name = "YELLOW ALERT"
+        tier_title = "Heat Watch (Advisory & Preparedness)"
+        tier_color = "#CA8A04"
+        tier_emoji = "🟡"
+        rationale = f"Moderate heat stress. Temperature ({sim_temp:.1f}°C) exceeds normal seasonal baseline with moderate probability of spikes."
+        directives = [
+            "🟡 Issue public health warnings on municipal weather portals and local radios.",
+            "💧 Check urban drinking water supply lines and ensure park fountains operate.",
+            "🩺 Primary health clinics on standby for early dehydration and heat exhaustion cases."
+        ]
     else:
-        st.success(f"🟢 GREEN ALERT ({current_temp:.1f}°C): Normal seasonal conditions.")
+        tier_name = "GREEN ALERT"
+        tier_title = "Normal Conditions (No Alert)"
+        tier_color = "#16A34A"
+        tier_emoji = "🟢"
+        rationale = f"Climatic parameters are within normal baseline ranges. Current Temperature ({sim_temp:.1f}°C) poses minimal public hazard."
+        directives = [
+            "✅ Standard seasonal meteorological monitoring active.",
+            "📊 Routine telemetry logging continues."
+        ]
+
+    # 3. Dynamic Alert Banner Display
+    alert_html = f"""
+    <div style="background-color: {tier_color}18; border: 2px solid {tier_color}; border-radius: 12px; padding: 1.2rem; margin: 1.2rem 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <span style="font-size: 0.85rem; font-weight: 700; color: {tier_color}; text-transform: uppercase; letter-spacing: 1px;">IMD AI Early Warning Protocol</span>
+                <h2 style="margin: 0.2rem 0; color: {tier_color}; font-size: 1.7rem;">{tier_emoji} {tier_name}: {tier_title}</h2>
+            </div>
+            <div style="font-size: 2.4rem;">{tier_emoji}</div>
+        </div>
+        <p style="margin: 0.5rem 0 0 0; color: #1E293B; font-size: 1.05rem;"><strong>Statistical Rationale:</strong> {rationale}</p>
+    </div>
+    """
+    st.markdown(alert_html, unsafe_allow_html=True)
+
+    # 4. KPI Metric Cards
+    kpi1, kpi2, kpi3, kpi4 = st.columns(4)
+    with kpi1:
+        st.metric(label="Simulated Max Temp", value=f"{sim_temp:.1f} °C", delta=f"{sim_temp - latest_temp:+.1f} °C" if sim_temp != latest_temp else None)
+    with kpi2:
+        st.metric(label="Apparent Heat Index", value=f"{sim_heat_index:.1f} °C", delta=f"RH {sim_rh}%")
+    with kpi3:
+        st.metric(label="Tail Probability P(X ≥ T)", value=f"{prob_exceed_pct:.1f}%", delta=f"Z = {z_sim:.2f}")
+    with kpi4:
+        st.metric(label="System Response", value=tier_name, delta="Live AI Tier")
+
+    st.markdown("---")
+
+    # 5. Two-Column Layout: Telemetry Chart + Action Directives
+    graph_col, action_col = st.columns([3, 2])
+
+    with graph_col:
+        st.subheader("📈 Temperature Telemetry vs IMD Warning Thresholds")
+        import plotly.graph_objects as go
+        fig_ts = go.Figure()
+        
+        # Historical Max Temp line
+        fig_ts.add_trace(go.Scatter(
+            x=df['Date'], y=df['Max_Temp_C'],
+            mode='lines+markers', name='Observed Max Temp',
+            line=dict(color='#2563EB', width=2), marker=dict(size=4)
+        ))
+        
+        # Threshold lines
+        fig_ts.add_hline(y=40.0, line_dash="dot", line_color="#CA8A04", annotation_text="Heatwatch (40°C)", annotation_position="top left")
+        fig_ts.add_hline(y=42.0, line_dash="dot", line_color="#EA580C", annotation_text="Severe Alert (42°C)", annotation_position="top left")
+        fig_ts.add_hline(y=44.0, line_dash="dot", line_color="#DC2626", annotation_text="Extreme Emergency (44°C)", annotation_position="top left")
+        
+        fig_ts.update_layout(
+            height=360, margin=dict(l=20, r=20, t=30, b=20),
+            xaxis_title="Date", yaxis_title="Temperature (°C)",
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
+        st.plotly_chart(fig_ts, use_container_width=True)
+
+    with action_col:
+        st.subheader("🏛️ Mandated Engineering & Municipal Directives")
+        for directive in directives:
+            st.markdown(f"- {directive}")
+
+    st.markdown("---")
+
+    # 6. Team Showcase Summary Table
+    st.subheader("👥 Group Roster & Presentation Timeline (6–7 Mins)")
+    team_roster = pd.DataFrame([
+        {"Tab": "Tab 1", "Member": "Member 1", "Focus": "Data Hygiene, IQR Outliers, 7-Bin Frequency Table, Ogive", "Slot": "0:00 – 1:00 min"},
+        {"Tab": "Tab 2", "Member": "Member 2", "Focus": "Mean, Median, Sample Variance (s²), Std Dev (s), CV%", "Slot": "1:00 – 2:00 min"},
+        {"Tab": "Tab 3", "Member": "Member 3", "Focus": "Normal Distribution N(μ, σ²), Z-score, P(T ≥ 40°C), Bell Curve", "Slot": "2:00 – 3:15 min"},
+        {"Tab": "Tab 4", "Member": "Member 4", "Focus": "Joint Contingency Table, P(Heatwave | High Hum), Bayes' Theorem", "Slot": "3:15 – 4:30 min"},
+        {"Tab": "Tab 5", "Member": "Member 5", "Focus": "Random Process, Autocorrelation ACF (r1 to r7), 95% CI bound", "Slot": "4:30 – 5:30 min"},
+        {"Tab": "Tab 6", "Member": "Member 6 (You)", "Focus": "AI Decision Engine, IMD Alert Matrix, Municipal Directives", "Slot": "5:30 – 6:45 min"}
+    ])
+    st.dataframe(team_roster, use_container_width=True)
+
 
