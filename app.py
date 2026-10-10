@@ -29,24 +29,23 @@ st.sidebar.info("💡 **Instructions for Team Members:**\nFind your assigned tab
 
 # --- 6 DEDICATED TABS FOR THE 6 MEMBERS ---
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "📊 Tab 1: Member 1 (Data & Frequency)",
+    "📊 Tab 1: Data Ingestion & Frequency",
     "📐 Tab 2: Member 2 (Descriptive Stats)",
     "🔔 Tab 3: Member 3 (Normal Distribution)",
     "🎲 Tab 4: Member 4 (Bayesian Inference)",
     "⏳ Tab 5: Member 5 (Random Process)",
-    "🚨 Tab 6: Member 6 (AI Decision Engine)"
+    "🚨 Tab 6: AI Decision Engine"
 ])
 
 # ==============================================================================
-# TAB 1: MEMBER 1 (WORKING EXAMPLE - SHOWS HOW TO WRITE CODE FOR STREAMLIT)
+# TAB 1: DATA INGESTION & FREQUENCY DISTRIBUTION
 # ==============================================================================
 with tab1:
-    st.header("📊 Member 1: Data Ingestion & Frequency Distribution")
-    st.write("**Assigned Role:** Data Engineering Lead | **Presentation Slot:** Min 0:00 – 1:00")
+    st.header("📊 Data Ingestion & Frequency Distribution")
     
-    st.markdown("### 🟢 Working Example (Use this as a reference for your tabs!):")
+    st.markdown("### 🟢 Meteorological Telemetry Overview & Exploratory Analysis")
     
-    # 1. How to show simple metric cards
+    # 1. Metric cards
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric(label="Total Observations (N)", value=len(df))
@@ -57,8 +56,8 @@ with tab1:
         
     st.markdown("---")
     
-    # 2. How to show step-by-step LaTeX formulas (Professor requires this!)
-    st.subheader("Step-by-Step Formula Example: Interquartile Range (IQR)")
+    # 2. Interquartile Range (IQR) & Outlier Screening
+    st.subheader("Interquartile Range (IQR) & Outlier Screening")
     q1 = df['Max_Temp_C'].quantile(0.25)
     q3 = df['Max_Temp_C'].quantile(0.75)
     iqr = q3 - q1
@@ -69,8 +68,8 @@ with tab1:
     
     st.markdown("---")
     
-    # 3. How to create an interactive Plotly chart
-    st.subheader("Interactive Plot Example: Temperature Histogram")
+    # 3. Interactive Temperature Histogram
+    st.subheader("Temperature Distribution Histogram")
     fig = px.histogram(
         df, 
         x="Max_Temp_C", 
