@@ -32,9 +32,9 @@ st.sidebar.info("💡 **Instructions for Team Members:**\nFind your assigned tab
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "📊 Tab 1: Data Ingestion & Frequency",
     "📐 Tab 2: Member 2 (Descriptive Stats)",
-    "🔔 Tab 3: Member 3 (Normal Distribution)",
+    "🔔 Tab 3: Normal Distribution",
     "🎲 Tab 4: Member 4 (Bayesian Inference)",
-    "⏳ Tab 5: Member 5 (Random Process)",
+    "⏳ Tab 5: Random Process & Time-Series",
     "🚨 Tab 6: AI Decision Engine"
 ])
 
@@ -228,13 +228,13 @@ with tab2:
 
 
 # ==============================================================================
-# TAB 3: MEMBER 3 (NORMAL DISTRIBUTION & EXTREME VALUES)
+# TAB 3: NORMAL DISTRIBUTION & EXTREME VALUES
 # ==============================================================================
 with tab3:
     import math
     import plotly.graph_objects as go
 
-    st.header("Member 3: Normal Distribution")
+    st.header("🔔 Normal Distribution & Extreme Values")
 
     mu = df['Max_Temp_C'].mean()
     sigma = df['Max_Temp_C'].std()
@@ -301,7 +301,7 @@ with tab4:
 
 
 # ==============================================================================
-# TAB 5: MEMBER 5 (TIME SERIES & RANDOM PROCESS)
+# TAB 5: TIME SERIES & RANDOM PROCESS
 # ==============================================================================
 with tab5:
     st.header("⏳ Temperature as a Random Process & Autocorrelation")
