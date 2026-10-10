@@ -194,37 +194,109 @@ with tab1:
 # TAB 2: MEMBER 2 (DESCRIPTIVE STATISTICS & DISPERSION)
 # ==============================================================================
 with tab2:
-    st.header("📐 Member 2: Descriptive Statistics & Measures of Dispersion")
-    st.write("**Assigned Role:** Descriptive Statistics Lead | **Presentation Slot:** Min 1:00 – 2:00")
+   
+    st.header("📐Descriptive Statistics & Measures of Dispersion")
     
-    st.markdown(r"""
-    #### 📝 What Member 2 needs to put here:
-    1. **Central Tendency:** Compute Mean ($\bar{x}$), Median ($M_d$), and Mode ($M_o$) of `df['Max_Temp_C']`.
-    2. **Measures of Dispersion:** Compute Variance ($s^2$), Standard Deviation ($s$), and Coefficient of Variation ($CV = \frac{s}{\bar{x}} \times 100\%$).
-    3. **Formulas:** Use `st.latex()` to display the formula and substituted numbers.
-    4. **Chart:** Add a Box-and-Whisker plot using `px.box(df, y='Max_Temp_C')`.
+    st.markdown("""
+    This section summarizes the daily maximum temperature data using measures of
+    central tendency and dispersion. Missing or non-numeric temperature values are
+    ignored in the calculations.
     """)
-    
     st.markdown("---")
-    st.subheader("💻 Member 2 Starter Code Area:")
-    
-    # --- TODO: MEMBER 2 WRITE YOUR CALCULATIONS HERE ---
-    sample_mean = df['Max_Temp_C'].mean()
-    sample_std = df['Max_Temp_C'].std()
-    cv_val = (sample_std / sample_mean) * 100
-    
-    # Example metric layout (customize this!)
-    m_col1, m_col2, m_col3 = st.columns(3)
-    with m_col1:
-        st.metric(label="Sample Mean (x̄)", value=f"{sample_mean:.2f} °C")
-    with m_col2:
-        st.metric(label="Sample Std Dev (s)", value=f"{sample_std:.2f} °C")
-    with m_col3:
-        st.metric(label="Coefficient of Variation (CV)", value=f"{cv_val:.2f} %")
-        
-    # TODO: Member 2, put your step-by-step LaTeX formulas here:
-    # st.latex(r"\bar{x} = \frac{\sum x_i}{N}")
-    # st.latex(r"s^2 = \frac{\sum (x_i - \bar{x})^2}{N - 1}")
+
+    st.subheader("1. Clean Temperature Data")
+    temp = pd.to_numeric(df["Max_Temp_C"], errors="coerce").dropna()
+    n = len(temp)
+
+    if n == 0:
+        st.warning("No valid maximum-temperature values were found in the dataset.")
+    else:
+        sample_mean = float(temp.mean())
+        median_val = float(temp.median())
+        modes = temp.mode().tolist()
+        min_temp = float(temp.min())
+        max_temp = float(temp.max())
+        range_val = max_temp - min_temp
+        variance_val = float(temp.var(ddof=1)) if n > 1 else float("nan")
+        sample_std = float(temp.std(ddof=1)) if n > 1 else float("nan")
+        cv_val = (sample_std / abs(sample_mean) * 100) if n > 1 and sample_mean != 0 else float("nan")
+        sum_x = float(temp.sum())
+        sum_sq_diff = float(((temp - sample_mean) ** 2).sum())
+
+        st.caption(f"Valid observations used: {n}")
+        st.markdown("---")
+
+        st.subheader("2. Measures of Central Tendency")
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Mean", f"{sample_mean:.2f} °C")
+        c2.metric("Median", f"{median_val:.2f} °C")
+        c3.metric("Number of observations (n)", f"{n}")
+
+        st.markdown("**Mean formula**")
+        st.latex(r"\bar{x} = \frac{\sum x_i}{n}")
+        st.latex(rf"\bar{{x}} = \frac{{{sum_x:.2f}}}{{{n}}} = {sample_mean:.2f}^\circ C")
+
+        st.markdown("**Median**")
+        st.write(f"The median is the middle value after sorting the {n} valid temperature observations: **{median_val:.2f} °C**.")
+
+        st.markdown("**Mode**")
+        if len(modes) == 1:
+            st.write(f"Most frequent temperature: **{modes[0]:.2f} °C**.")
+        else:
+            mode_text = ", ".join(f"{value:.2f} °C" for value in modes)
+            st.write(f"The data are multimodal. Most frequent values: **{mode_text}**.")
+
+        st.markdown("---")
+        st.subheader("3. Measures of Dispersion")
+        d1, d2, d3 = st.columns(3)
+        d1.metric("Minimum", f"{min_temp:.2f} °C")
+        d2.metric("Maximum", f"{max_temp:.2f} °C")
+        d3.metric("Range", f"{range_val:.2f} °C")
+
+        d4, d5, d6 = st.columns(3)
+        d4.metric("Sample Variance", f"{variance_val:.4f} °C²" if n > 1 else "Not available")
+        d5.metric("Sample Standard Deviation", f"{sample_std:.2f} °C" if n > 1 else "Not available")
+        d6.metric("Coefficient of Variation", f"{cv_val:.2f} %" if n > 1 and sample_mean != 0 else "Not available")
+
+        st.markdown("**Range formula**")
+        st.latex(r"\text{Range} = x_{\max} - x_{\min}")
+        st.latex(rf"\text{{Range}} = {max_temp:.2f} - {min_temp:.2f} = {range_val:.2f}^\circ C")
+
+        if n > 1:
+            st.markdown("**Sample variance formula**")
+            st.latex(r"s^2 = \frac{\sum (x_i - \bar{x})^2}{n-1}")
+            st.latex(rf"s^2 = \frac{{{sum_sq_diff:.4f}}}{{{n}-1}} = {variance_val:.4f}\ ^\circ C^2")
+
+            st.markdown("**Sample standard deviation formula**")
+            st.latex(r"s = \sqrt{s^2}")
+            st.latex(rf"s = \sqrt{{{variance_val:.4f}}} = {sample_std:.2f}^\circ C")
+
+            st.markdown("**Coefficient of variation formula**")
+            st.latex(r"CV = \frac{s}{|\bar{x}|} \times 100\%")
+            if sample_mean != 0:
+                st.latex(rf"CV = \frac{{{sample_std:.2f}}}{{|{sample_mean:.2f}|}} \times 100\% = {cv_val:.2f}\%")
+
+        st.markdown("---")
+        st.subheader("4. Box-and-Whisker Plot")
+        plot_df = pd.DataFrame({"Max_Temp_C": temp})
+        fig_box = px.box(
+            plot_df,
+            y="Max_Temp_C",
+            points="all",
+            title="Distribution of Daily Maximum Temperatures",
+            labels={"Max_Temp_C": "Maximum Temperature (°C)"}
+        )
+        fig_box.update_layout(template="plotly_white", yaxis_title="Maximum Temperature (°C)")
+        st.plotly_chart(fig_box, use_container_width=True)
+
+        st.subheader("5. Brief Interpretation")
+        st.write(f"- The average daily maximum temperature is **{sample_mean:.2f} °C**.")
+        st.write(f"- The observed temperatures span **{range_val:.2f} °C**, from {min_temp:.2f} °C to {max_temp:.2f} °C.")
+        if n > 1:
+            st.write(f"- The sample standard deviation is **{sample_std:.2f} °C**, describing the typical spread around the mean.")
+            st.write(f"- The coefficient of variation is **{cv_val:.2f}%**, which expresses standard deviation relative to the mean.")
+
+
 
 
 # ==============================================================================
