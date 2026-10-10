@@ -30,7 +30,7 @@ st.sidebar.info("💡 **Instructions for Team Members:**\nFind your assigned tab
 
 # --- 6 DEDICATED TABS FOR THE 6 MEMBERS ---
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "📊 Tab 1: Member 1 (Data & Frequency)",
+    "📊 Tab 1: Data Ingestion & Frequency",
     "📐 Tab 2: Member 2 (Descriptive Stats)",
     "🔔 Tab 3: Member 3 (Normal Distribution)",
     "🎲 Tab 4: Member 4 (Bayesian Inference)",
@@ -39,15 +39,14 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
 ])
 
 # ==============================================================================
-# TAB 1: MEMBER 1 (WORKING EXAMPLE - SHOWS HOW TO WRITE CODE FOR STREAMLIT)
+# TAB 1: DATA INGESTION & FREQUENCY DISTRIBUTION
 # ==============================================================================
 with tab1:
-    st.header("📊 Member 1: Data Ingestion & Frequency Distribution")
-    st.write("**Assigned Role:** Data Engineering Lead | **Presentation Slot:** Min 0:00 – 1:00")
+    st.header("📊 Data Ingestion & Frequency Distribution")
     
-    st.markdown("### 🟢 Working Example (Use this as a reference for your tabs!):")
+    st.markdown("### 🟢 Meteorological Telemetry Overview & Exploratory Analysis")
     
-    # 1. How to show simple metric cards
+    # 1. Metric cards
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric(label="Total Observations (N)", value=len(df))
@@ -58,8 +57,8 @@ with tab1:
         
     st.markdown("---")
     
-    # 2. How to show step-by-step LaTeX formulas (Professor requires this!)
-    st.subheader("Step-by-Step Formula Example: Interquartile Range (IQR)")
+    # 2. Interquartile Range (IQR) & Outlier Screening
+    st.subheader("Interquartile Range (IQR) & Outlier Screening")
     q1 = df['Max_Temp_C'].quantile(0.25)
     q3 = df['Max_Temp_C'].quantile(0.75)
     iqr = q3 - q1
@@ -70,8 +69,8 @@ with tab1:
     
     st.markdown("---")
     
-    # 3. How to create an interactive Plotly chart
-    st.subheader("Interactive Plot Example: Temperature Histogram")
+    # 3. Interactive Temperature Histogram
+    st.subheader("Temperature Distribution Histogram")
     fig = px.histogram(
         df, 
         x="Max_Temp_C", 
@@ -82,7 +81,113 @@ with tab1:
     )
     st.plotly_chart(fig, use_container_width=True)
     
-    st.info("👆 **Member 1:** You can extend this tab by adding your 7-bin Frequency Table and Ogive curve.")
+    st.markdown("---")
+
+    # 4. Continuous Frequency Distribution Table (7 Bins)
+    st.subheader("📋 Continuous Frequency Distribution Table (7 Bins)")
+
+    # Select temperature data and remove missing values
+    temp_data = df["Max_Temp_C"].dropna()
+
+    # Calculate range and class width
+    min_temp = temp_data.min()
+    max_temp = temp_data.max()
+    data_range = max_temp - min_temp
+    class_width = data_range / 7
+
+    st.markdown("### Step 1: Calculate Range and Class Width")
+
+    st.latex(r"\text{Range} = X_{\max} - X_{\min}")
+    st.latex(
+        rf"\text{{Range}} = {max_temp:.2f} - {min_temp:.2f}"
+        rf" = {data_range:.2f}"
+    )
+
+    st.latex(r"\text{Class Width} = \frac{\text{Range}}{7}")
+    st.latex(
+        rf"\text{{Class Width}} = \frac{{{data_range:.2f}}}{{7}}"
+        rf" = {class_width:.2f}"
+    )
+
+    # Create 7 equal-width continuous class intervals
+    bin_edges = np.linspace(min_temp, max_temp, 8)
+
+    frequencies, edges = np.histogram(
+        temp_data,
+        bins=bin_edges
+    )
+
+    cumulative_frequency = np.cumsum(frequencies)
+
+    frequency_table = pd.DataFrame({
+        "Class Interval (°C)": [
+            f"{edges[i]:.2f} – {edges[i + 1]:.2f}"
+            for i in range(7)
+        ],
+        "Lower Boundary (°C)": edges[:-1].round(2),
+        "Upper Boundary (°C)": edges[1:].round(2),
+        "Frequency (f)": frequencies,
+        "Cumulative Frequency (cf)": cumulative_frequency
+    })
+
+    st.dataframe(frequency_table, use_container_width=True)
+
+    st.metric(
+        label="Total Observations",
+        value=int(frequencies.sum())
+    )
+
+    st.markdown("---")
+
+    # 5. Ogive Curve
+    st.subheader("📈 Less-Than Ogive Curve")
+
+    st.write(
+        "An ogive is a graph of cumulative frequency "
+        "plotted against the upper class boundaries."
+    )
+
+    ogive_df = pd.DataFrame({
+        "Upper Class Boundary (°C)": edges[1:],
+        "Cumulative Frequency": cumulative_frequency
+    })
+
+    # Add the starting point of the ogive
+    start_point = pd.DataFrame({
+        "Upper Class Boundary (°C)": [edges[0]],
+        "Cumulative Frequency": [0]
+    })
+
+    ogive_df = pd.concat(
+        [start_point, ogive_df],
+        ignore_index=True
+    )
+
+    fig_ogive = px.line(
+        ogive_df,
+        x="Upper Class Boundary (°C)",
+        y="Cumulative Frequency",
+        markers=True,
+        title="Less-Than Ogive: Mumbai–Maharashtra Maximum Temperatures",
+        labels={
+            "Upper Class Boundary (°C)": "Upper Class Boundary (°C)",
+            "Cumulative Frequency": "Cumulative Frequency"
+        },
+        text="Cumulative Frequency"
+    )
+
+    fig_ogive.update_traces(line=dict(width=3))
+
+    fig_ogive.update_layout(
+        template="plotly_white",
+        hovermode="x unified"
+    )
+
+    st.plotly_chart(fig_ogive, use_container_width=True)
+
+    st.success(
+        "Frequency table and less-than ogive generated successfully!"
+    )
 
 
 # ==============================================================================
