@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+from modules.time_series_process import compute_autocorrelation, analyze_stationarity, detect_heatwave_streaks
 
 # --- PAGE SETUP ---
 st.set_page_config(
@@ -187,32 +188,121 @@ with tab4:
 # TAB 5: MEMBER 5 (TIME SERIES & RANDOM PROCESS)
 # ==============================================================================
 with tab5:
-    st.header("⏳ Member 5: Temperature as a Random Process & Autocorrelation")
-    st.write("**Assigned Role:** Time Series & Random Process Lead | **Presentation Slot:** Min 4:30 – 5:30")
-    
-    st.markdown(r"""
-    #### 📝 What Member 5 needs to put here:
-    1. **Random Process Representation:** Model daily temperature sequence as discrete time series $\{X_t\}$.
-    2. **Autocorrelation Function (ACF):** Compute autocorrelation coefficients $r_1, r_2, \dots, r_7$ for lags 1 through 7 days.
-    3. **95% Confidence Bounds:** Compute Bartlett's confidence bounds: $\pm \\frac{1.96}{\\sqrt{N}}$.
-    4. **Stationarity & Streaks:** Show 7-day rolling mean and consecutive heatwave streaks (days $\ge 40^\circ\text{C}$).
-    """)
-    
+    st.header("⏳ Temperature as a Random Process & Autocorrelation")
+
     st.markdown("---")
-    st.subheader("💻 Member 5 Starter Code Area:")
-    
-    # --- TODO: MEMBER 5 WRITE YOUR CALCULATIONS HERE ---
-    # Example Lag-1 autocorrelation:
-    lag1_autocorr = df['Max_Temp_C'].autocorr(lag=1)
-    ci_bound = 1.96 / np.sqrt(len(df))
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric(label="Lag-1 Autocorrelation (r1)", value=f"{lag1_autocorr:.4f}")
-    with col2:
-        st.metric(label="95% Bartlett Confidence Bound", value=f"± {ci_bound:.4f}")
-        
-    # TODO: Member 5, plot the correlogram (ACF bar chart) and rolling mean graph here!
+    st.subheader("💻 Time-Series Analysis")
+
+    # Prepare a clean, chronological copy for Member 5 only.
+    ts_df = df[["Date", "Max_Temp_C"]].copy()
+    ts_df["Date"] = pd.to_datetime(ts_df["Date"], errors="coerce")
+    ts_df["Max_Temp_C"] = pd.to_numeric(ts_df["Max_Temp_C"], errors="coerce")
+    ts_df = (
+        ts_df.dropna(subset=["Date", "Max_Temp_C"])
+        .sort_values("Date")
+        .reset_index(drop=True)
+    )
+
+    if len(ts_df) < 8:
+        st.warning("At least 8 valid daily temperature observations are needed to calculate ACF for lags 1–7.")
+    else:
+        # Calculate autocorrelation values for lags 1 through 7 and the 95% bounds.
+        acf_df, ci_bound, formula_steps = compute_autocorrelation(
+            ts_df["Max_Temp_C"], max_lags=7
+        )
+        lag1_autocorr = float(
+            acf_df.loc[acf_df["Lag (Days)"] == 1, "Autocorrelation (rk)"].iloc[0]
+        )
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric(
+                label="Lag-1 Autocorrelation (r1)",
+                value=f"{lag1_autocorr:.4f}",
+            )
+        with col2:
+            st.metric(
+                label="95% Bartlett Confidence Bound",
+                value=f"± {ci_bound:.4f}",
+            )
+
+        st.subheader("1. Correlogram (Autocorrelation Function)")
+        st.write(
+            "Each bar shows the autocorrelation between daily maximum temperature and "
+            "temperature a given number of days later. Bars outside the dashed confidence "
+            "bounds are flagged as statistically significant by this approximate rule."
+        )
+        acf_fig = px.bar(
+            acf_df,
+            x="Lag (Days)",
+            y="Autocorrelation (rk)",
+            title="Autocorrelation of Daily Maximum Temperature (Lags 1–7)",
+            labels={
+                "Lag (Days)": "Lag (days)",
+                "Autocorrelation (rk)": "Autocorrelation coefficient",
+            },
+            hover_data={"Statistically Significant": True},
+        )
+        acf_fig.add_hline(
+            y=ci_bound,
+            line_dash="dash",
+            line_color="red",
+            annotation_text=f"+95% bound ({ci_bound:.3f})",
+        )
+        acf_fig.add_hline(
+            y=-ci_bound,
+            line_dash="dash",
+            line_color="red",
+            annotation_text=f"−95% bound (−{ci_bound:.3f})",
+        )
+        acf_fig.add_hline(y=0, line_color="gray", line_width=1)
+        acf_fig.update_layout(xaxis=dict(dtick=1))
+        st.plotly_chart(acf_fig, use_container_width=True)
+        st.dataframe(acf_df, use_container_width=True, hide_index=True)
+
+        st.subheader("2. Daily Temperature and 7-Day Rolling Mean")
+        stationarity = analyze_stationarity(ts_df, window=7)
+        rolling_df = pd.DataFrame(
+            {
+                "Date": ts_df["Date"],
+                "Daily Maximum Temperature (°C)": ts_df["Max_Temp_C"],
+                "7-Day Rolling Mean (°C)": stationarity["rolling_mean"],
+            }
+        )
+        mean_fig = px.line(
+            rolling_df,
+            x="Date",
+            y=["Daily Maximum Temperature (°C)", "7-Day Rolling Mean (°C)"],
+            title="Daily Maximum Temperature with 7-Day Rolling Mean",
+            labels={"value": "Temperature (°C)", "Date": "Date", "variable": "Series"},
+        )
+        mean_fig.update_traces(connectgaps=False)
+        st.plotly_chart(mean_fig, use_container_width=True)
+        st.caption(
+            f"Rolling-mean range: {stationarity['mean_diff']} °C. "
+            f"Rolling standard-deviation range: {stationarity['std_diff']} °C. "
+            "Rolling summaries help inspect possible changes over time; they do not alone prove stationarity."
+        )
+
+        st.subheader("3. Heatwave Streaks (Temperature ≥ 40°C)")
+        st.caption(
+            "This uses the project's 40°C threshold to identify runs of at least two consecutive observations. "
+            "It is a project rule and not necessarily the official IMD heatwave definition."
+        )
+        streak_df = detect_heatwave_streaks(ts_df, threshold=40.0)
+        hot_day_count = int((ts_df["Max_Temp_C"] >= 40.0).sum())
+        st.metric("Days with maximum temperature ≥ 40°C", hot_day_count)
+        if streak_df.empty:
+            st.info("No streak of two or more consecutive days at or above 40°C was found in this dataset.")
+        else:
+            st.dataframe(streak_df, use_container_width=True, hide_index=True)
+            longest = streak_df.loc[streak_df["Duration (Days)"].idxmax()]
+            st.write(
+                f"**Longest detected streak:** {int(longest['Duration (Days)'])} days, "
+                f"starting {longest['Start Date']}; peak temperature "
+                f"{longest['Peak Temp (°C)']:.1f} °C."
+            )
+
 
 
 # ==============================================================================
