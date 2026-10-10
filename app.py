@@ -31,7 +31,7 @@ st.sidebar.info("💡 **Instructions for Team Members:**\nFind your assigned tab
 # --- 6 DEDICATED TABS FOR THE 6 MEMBERS ---
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "📊 Tab 1: Data Ingestion & Frequency",
-    "📐 Tab 2: Member 2 (Descriptive Stats)",
+    "📐 Tab 2: Descriptive Stats",
     "🔔 Tab 3: Normal Distribution",
     "🎲 Tab 4: Member 4 (Bayesian Inference)",
     "⏳ Tab 5: Random Process & Time-Series",
@@ -191,11 +191,11 @@ with tab1:
 
 
 # ==============================================================================
-# TAB 2: MEMBER 2 (DESCRIPTIVE STATISTICS & DISPERSION)
+# TAB 2: DESCRIPTIVE STATISTICS & DISPERSION
 # ==============================================================================
 with tab2:
    
-    st.header("📐Descriptive Statistics & Measures of Dispersion")
+    st.header("📐 Descriptive Statistics & Measures of Dispersion")
     
     st.markdown("""
     This section summarizes the daily maximum temperature data using measures of
