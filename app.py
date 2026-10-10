@@ -214,16 +214,50 @@ with tab5:
             acf_df.loc[acf_df["Lag (Days)"] == 1, "Autocorrelation (rk)"].iloc[0]
         )
 
-        col1, col2 = st.columns(2)
+        # Enhanced metric cards: clearer labels, interpretations, and visual grouping.
+        col1, col2 = st.columns(2, gap="medium")
+
         with col1:
-            st.metric(
-                label="Lag-1 Autocorrelation (r1)",
-                value=f"{lag1_autocorr:.4f}",
-            )
+            with st.container(border=True):
+                st.markdown("### 🔗 Autocorrelation")
+                st.metric(
+                    label="Lag-1 Autocorrelation (r₁)",
+                    value=f"{lag1_autocorr:.4f}",
+                    delta=(
+                        "Strong positive relationship"
+                        if lag1_autocorr > 0.5
+                        else "Weak or moderate relationship"
+                    ),
+                    delta_color="off",
+                )
+                st.caption(
+                    "How strongly today's temperature is related "
+                    "to the previous day's temperature."
+                )
+
         with col2:
-            st.metric(
-                label="95% Bartlett Confidence Bound",
-                value=f"± {ci_bound:.4f}",
+            with st.container(border=True):
+                st.markdown("### 📊 Confidence Interval")
+                st.metric(
+                    label="95% Bartlett Confidence Bound",
+                    value=f"± {ci_bound:.4f}",
+                    delta=f"Range: −{ci_bound:.4f} to +{ci_bound:.4f}",
+                    delta_color="off",
+                )
+                st.caption(
+                    "Autocorrelation values outside these bounds are "
+                    "approximately significant at the 5% level."
+                )
+
+        if abs(lag1_autocorr) > ci_bound:
+            st.success(
+                f"📈 Lag-1 autocorrelation ({lag1_autocorr:.4f}) lies outside "
+                "the confidence bounds, indicating statistically significant "
+                "autocorrelation under this approximate test."
+            )
+        else:
+            st.info(
+                "Lag-1 autocorrelation lies within the confidence bounds."
             )
 
         st.subheader("1. Correlogram (Autocorrelation Function)")
