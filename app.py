@@ -125,32 +125,43 @@ with tab2:
 # TAB 3: MEMBER 3 (NORMAL DISTRIBUTION & EXTREME VALUES)
 # ==============================================================================
 with tab3:
-    st.header("🔔 Member 3: Variability & Extreme Temperature Analysis")
-    st.write("**Assigned Role:** Probability & Normal Distribution Lead | **Presentation Slot:** Min 2:00 – 3:15")
-    
-    st.markdown(r"""
-    #### 📝 What Member 3 needs to put here:
-    1. **Gaussian Parameters:** Fit Normal Distribution $\mathcal{N}(\mu, \sigma^2)$ using mean and standard deviation.
-    2. **Z-Score Calculation:** Transform threshold temperatures into $Z$-scores using $Z = \frac{X - \mu}{\sigma}$.
-    3. **Tail Exceedance Probabilities:** Calculate $P(X \ge 40^\circ\text{C})$ and $P(X \ge 42^\circ\text{C})$.
-    4. **Interactive Slider & Bell Curve:** Let the user slide a temperature threshold and see the shaded probability area on the bell curve!
-    """)
-    
-    st.markdown("---")
-    st.subheader("💻 Member 3 Starter Code Area:")
-    
-    # --- TODO: MEMBER 3 WRITE YOUR CALCULATIONS HERE ---
+    import math
+    import plotly.graph_objects as go
+
+    st.header("Member 3: Normal Distribution")
+
     mu = df['Max_Temp_C'].mean()
     sigma = df['Max_Temp_C'].std()
-    
-    # Interactive threshold slider
-    threshold_input = st.slider("Select Temperature Threshold (°C) for Risk Calculation:", 36.0, 48.0, 40.0, 0.5)
-    z_score = (threshold_input - mu) / sigma
-    
-    st.write(f"**Calculated Z-Score for {threshold_input}°C:** `Z = {z_score:.4f}`")
-    
-    # TODO: Member 3, calculate P(X >= threshold) and plot the Normal Bell Curve using Plotly!
 
+    st.write(f"Mean: {mu:.2f}°C")
+    st.write(f"Standard deviation: {sigma:.2f}°C")
+    st.latex(rf"T \sim N({mu:.2f}, {sigma**2:.2f})")
+
+    t = st.slider("Temperature threshold (°C)", 36.0, 48.0, 40.0, 0.5)
+    z = (t - mu) / sigma
+    p = 0.5 * math.erfc(z / math.sqrt(2))
+
+    st.latex(rf"Z = \frac{{{t}-{mu:.2f}}}{{{sigma:.2f}}} = {z:.4f}")
+    st.latex(r"P(T \ge t) = 1-\Phi(Z)")
+    st.metric(f"Probability of temperature ≥ {t}°C", f"{p*100:.2f}%")
+
+    for temperature in [40, 42, 45]:
+        z_value = (temperature - mu) / sigma
+        probability = 0.5 * math.erfc(z_value / math.sqrt(2))
+        st.write(f"{temperature}°C: Z = {z_value:.4f}, Probability = {probability*100:.2f}%")
+
+    x = np.linspace(min(mu-5*sigma, t-sigma), max(mu+5*sigma, t+sigma), 500)
+    x = np.sort(np.append(x, t))
+    y = np.exp(-0.5*((x-mu)/sigma)**2) / (sigma*math.sqrt(2*math.pi))
+
+    fig = go.Figure(go.Scatter(x=x, y=y, mode="lines", name="Bell curve"))
+    fig.add_trace(go.Scatter(
+        x=x[x >= t], y=y[x >= t],
+        mode="lines", fill="tozeroy", name="Probability area"
+    ))
+    fig.add_vline(x=t, line_dash="dash")
+    fig.update_layout(xaxis_title="Temperature (°C)", yaxis_title="Probability density")
+    st.plotly_chart(fig, use_container_width=True)
 
 # ==============================================================================
 # TAB 4: MEMBER 4 (CONDITIONAL PROBABILITY & BAYES' THEOREM)
