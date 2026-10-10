@@ -33,7 +33,7 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "📊 Tab 1: Data Ingestion & Frequency",
     "📐 Tab 2: Descriptive Stats",
     "🔔 Tab 3: Normal Distribution",
-    "🎲 Tab 4: Member 4 (Bayesian Inference)",
+    "🎲 Tab 4: Bayesian Inference",
     "⏳ Tab 5: Random Process & Time-Series",
     "🚨 Tab 6: AI Decision Engine"
 ])
@@ -342,14 +342,10 @@ with tab3:
     st.plotly_chart(fig, use_container_width=True)
 
 # ==============================================================================
-# TAB 4: MEMBER 4 (CONDITIONAL PROBABILITY & BAYES' THEOREM)
+# TAB 4: CONDITIONAL PROBABILITY & BAYES' THEOREM
 # ==============================================================================
 with tab4:
-    st.header("🎲 Member 4: Conditional Probability & Bayesian Inference")
-    st.write(
-        "**Assigned Role:** Bayesian Inference Specialist | "
-        "**Presentation Slot:** Min 3:15 – 4:30"
-    )
+    st.header("🎲 Conditional Probability & Bayesian Inference")
 
     # Classify days by temperature and humidity.
     temp_category = df["Max_Temp_C"].apply(
