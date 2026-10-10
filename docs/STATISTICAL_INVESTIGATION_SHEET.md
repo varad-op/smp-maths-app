@@ -1,4 +1,4 @@
-﻿# STATISTICAL INVESTIGATION SHEET
+# STATISTICAL INVESTIGATION SHEET
 ## Academic Year 2026–27 | S.Y. B.Tech Engineering
 ### Course: Statistical Methods and Probability (SMP) | Internal Assessment – IA 1
 **Theme:** STAT-AI Engineering Challenge — *From Data to Decision*  
@@ -73,60 +73,70 @@ Assuming $X \sim \mathcal{N}(\mu, \sigma^2)$:
 
 ### Calculation 1: Descriptive Statistics
 For $N = 65$ observations of Maximum Temperature ($T_{\max}$):
-- $\sum_{i=1}^{65} x_i = 2505.40^\circ\text{C}$
+- $\sum_{i=1}^{65} x_i = 2439.40^\circ\text{C}$
 - Mean:
-  $$\bar{x} = \frac{2505.40}{65} = 38.54^\circ\text{C}$$
-- Median: $M_d = 38.40^\circ\text{C}$
-- $\sum (x_i - \bar{x})^2 = 636.88$
+  $$\bar{x} = \frac{2439.40}{65} = 37.53^\circ\text{C}$$
+- Median: $M_d = 37.30^\circ\text{C}$
+- $\sum (x_i - \bar{x})^2 = 476.12$
 - Variance:
-  $$s^2 = \frac{636.88}{65 - 1} = \frac{636.88}{64} = 9.9512\ (^\circ\text{C})^2$$
+  $$s^2 = \frac{476.12}{65 - 1} = \frac{476.12}{64} = 7.4393\ (^\circ\text{C})^2$$
 - Standard Deviation:
-  $$s = \sqrt{9.9512} = 3.15^\circ\text{C}$$
+  $$s = \sqrt{7.4393} = 2.73^\circ\text{C}$$
 - Coefficient of Variation:
-  $$CV = \left( \frac{3.15}{38.54} \right) \times 100\% = 8.18\%$$
+  $$CV = \left( \frac{2.73}{37.53} \right) \times 100\% = 7.27\%$$
 
-### Calculation 2: Continuous Frequency Distribution
-| Class Interval ($^\circ\text{C}$) | Class Mark ($x_i$) | Frequency ($f_i$) | Cumulative Freq ($cf$) | Relative Freq ($\%$) | $f_i x_i$ |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| 32.0 – 34.0 | 33.00 | 5 | 5 | 7.69% | 165.00 |
-| 34.0 – 36.0 | 35.00 | 11 | 16 | 16.92% | 385.00 |
-| 36.0 – 38.0 | 37.00 | 16 | 32 | 24.62% | 592.00 |
-| 38.0 – 40.0 | 39.00 | 14 | 46 | 21.54% | 546.00 |
-| 40.0 – 42.0 | 41.00 | 12 | 58 | 18.46% | 492.00 |
-| 42.0 – 44.0 | 43.00 | 5 | 63 | 7.69% | 215.00 |
-| 44.0 – 46.0 | 45.00 | 2 | 65 | 3.08% | 90.00 |
-| **Total** | — | **$N = 65$** | — | **100.00%** | **2485.00** |
+### Calculation 2: Continuous Frequency Distribution (7 Structured Bins)
+| Class Interval ($^\circ\text{C}$) | Class Mark ($x_i$) | Frequency ($f_i$) | Cumulative Freq ($cf$) | Relative Freq ($\%$) | $f_i x_i$ | $f_i x_i^2$ |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 31.0 – 33.0 | 32.0 | 3 | 3 | 4.62% | 96.00 | 3,072.00 |
+| 33.0 – 35.0 | 34.0 | 6 | 9 | 9.23% | 204.00 | 6,936.00 |
+| 35.0 – 37.0 | 36.0 | 17 | 26 | 26.15% | 612.00 | 22,032.00 |
+| 37.0 – 39.0 | 38.0 | 23 | 49 | 35.38% | 874.00 | 33,212.00 |
+| 39.0 – 41.0 | 40.0 | 10 | 59 | 15.38% | 400.00 | 16,000.00 |
+| 41.0 – 43.0 | 42.0 | 2 | 61 | 3.08% | 84.00 | 3,528.00 |
+| 43.0 – 45.0 | 44.0 | 4 | 65 | 6.15% | 176.00 | 7,744.00 |
+| **Total** | — | **$N = 65$** | — | **100.00%** | **2,446.00** | **92,524.00** |
 
 - Grouped Mean:
-  $$\bar{x}_{\text{grouped}} = \frac{2485.00}{65} = 38.23^\circ\text{C}$$
+  $$\bar{x}_{\text{grouped}} = \frac{\sum f_i x_i}{\sum f_i} = \frac{2446.00}{65} = 37.63^\circ\text{C}$$
+- Grouped Median: Median Class = $[37.0 - 39.0]$, $L = 37.0$, $N/2 = 32.5$, $cf_{\text{prev}} = 26$, $f = 23$, $h = 2.0$:
+  $$M_d = 37.0 + \left[ \frac{32.5 - 26}{23} \right] \times 2.0 = 37.0 + 0.565 = 37.57^\circ\text{C}$$
+- Discretization discrepancy: $\Delta = +0.10^\circ\text{C}$ ($0.27\%$), demonstrating robust continuous bin fidelity.
 
 ### Calculation 3: Extreme Value Probability via Normal Distribution
-Fitting $\mathcal{N}(\mu = 38.54^\circ\text{C}, \sigma = 3.15^\circ\text{C})$:
-- **Threshold $T = 40.0^\circ\text{C}$ (Heatwave Alert):**
-  $$Z_{40} = \frac{40.0 - 38.54}{3.15} = +0.4635$$
-  $$P(X \ge 40.0^\circ\text{C}) = 1 - \Phi(0.4635) = 1 - 0.6785 = 0.3215\ (32.15\%)$$
-- **Threshold $T = 42.0^\circ\text{C}$ (Severe Heatwave):**
-  $$Z_{42} = \frac{42.0 - 38.54}{3.15} = +1.0984$$
-  $$P(X \ge 42.0^\circ\text{C}) = 1 - \Phi(1.0984) = 1 - 0.8640 = 0.1360\ (13.60\%)$$
-- **Threshold $T = 45.0^\circ\text{C}$ (Extreme Catastrophe):**
-  $$Z_{45} = \frac{45.0 - 38.54}{3.15} = +2.0508$$
-  $$P(X \ge 45.0^\circ\text{C}) = 1 - \Phi(2.0508) = 1 - 0.9798 = 0.0202\ (2.02\%)$$
+Fitting $\mathcal{N}(\mu = 37.53^\circ\text{C}, \sigma = 2.73^\circ\text{C})$:
+- **Threshold $T = 38.0^\circ\text{C}$ (Heat Watch Advisory):**
+  $$Z_{38} = \frac{38.0 - 37.53}{2.73} = +0.1722 \implies P(X \ge 38.0^\circ\text{C}) = 1 - \Phi(0.17) = 43.17\%$$
+- **Threshold $T = 40.0^\circ\text{C}$ (Official IMD Heatwave Alert):**
+  $$Z_{40} = \frac{40.0 - 37.53}{2.73} = +0.9048 \implies P(X \ge 40.0^\circ\text{C}) = 1 - \Phi(0.90) = 18.28\%$$
+- **Threshold $T = 42.0^\circ\text{C}$ (Severe Heatwave Emergency):**
+  $$Z_{42} = \frac{42.0 - 37.53}{2.73} = +1.6374 \implies P(X \ge 42.0^\circ\text{C}) = 1 - \Phi(1.64) = 5.08\%$$
+- **Threshold $T = 45.0^\circ\text{C}$ (Catastrophic Outlier):**
+  $$Z_{45} = \frac{45.0 - 37.53}{2.73} = +2.7363 \implies P(X \ge 45.0^\circ\text{C}) = 1 - \Phi(2.74) = 0.31\%$$
 
-### Calculation 4: Bayesian Sensor Update
-- Historical Prior Heatwave Probability: $P(H) = 19/65 = 0.2923\ (29.23\%)$
+### Calculation 4: Contingency Matrix & Bayesian Sensor Update
+- Historical Prior Heatwave Probability: $P(H) = 7/65 = 0.1077\ (10.77\%)$
+- Prior Non-Heatwave: $P(\neg H) = 58/65 = 0.8923\ (89.23\%)$
 - Sensor True Positive Rate: $P(S \mid H) = 0.92$
 - Sensor False Alarm Rate: $P(S \mid \neg H) = 0.08$
 - Marginal Sensor Alert Probability:
-  $$P(S) = (0.92 \times 0.2923) + (0.08 \times 0.7077) = 0.2689 + 0.0566 = 0.3255$$
-- Posterior Probability:
-  $$P(H \mid S) = \frac{0.2689}{0.3255} = 0.8261\ (82.61\%)$$
+  $$P(S) = (0.92 \times 0.1077) + (0.08 \times 0.8923) = 0.0991 + 0.0714 = 0.1705$$
+- Posterior Probability via Bayes' Theorem:
+  $$P(H \mid S) = \frac{P(S \mid H) \cdot P(H)}{P(S)} = \frac{0.0991}{0.1705} = 0.5812\ (58.12\%)$$
+- *Engineering Takeaway:* IoT sensor alarms elevate belief from baseline $10.77\%$ to $58.12\%$, successfully filtering $41.88\%$ of false emergency calls before dispatching municipal resources.
 
 ### Calculation 5: Autocorrelation & Random Process
-- Number of observations $N = 65 \implies \text{CI}_{95\%} = \pm \frac{1.96}{\sqrt{65}} = \pm 0.2431$
-- Lag-1 Autocorrelation:
-  $$r_1 = 0.7682 \quad (\gg +0.2431 \implies \text{Statistically Significant})$$
-- Lag-2 Autocorrelation: $r_2 = 0.5420$
-- **Inference:** Thermal memory persists for 2–3 consecutive days. Heatwaves do not behave as memoryless white noise; they form autocorrelated multi-day spells.
+- Number of observations $N = 65 \implies \text{Bartlett 95% Confidence Bound} = \pm \frac{1.96}{\sqrt{65}} = \pm 0.2431$
+- Autocorrelation Coefficients:
+  - $r_1 = +0.9026$ (Statistically significant, $\gg +0.2431$)
+  - $r_2 = +0.8050$ (Statistically significant)
+  - $r_3 = +0.6862$ (Statistically significant)
+  - $r_4 = +0.5291$ (Statistically significant)
+  - $r_5 = +0.3717$ (Statistically significant)
+  - $r_6 = +0.1926$ (Insignificant, memory within noise)
+  - $r_7 = +0.0455$ (Insignificant)
+- Heatwave Streak: Detected continuous 6-day streak (May 4 to May 9, 2026) peaking at $44.40^\circ\text{C}$.
+- *Inference:* Atmospheric thermal memory persists up to 5 days, confirming heatwaves act as autocorrelated multi-day spells rather than memoryless noise.
 
 ---
 
