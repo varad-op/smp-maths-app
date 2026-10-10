@@ -346,30 +346,170 @@ with tab3:
 # ==============================================================================
 with tab4:
     st.header("🎲 Member 4: Conditional Probability & Bayesian Inference")
-    st.write("**Assigned Role:** Bayesian Inference Specialist | **Presentation Slot:** Min 3:15 – 4:30")
-    
-    st.markdown(r"""
-    #### 📝 What Member 4 needs to put here:
-    1. **Joint & Marginal Contingency Table:** Create a 2x2 table of Temperature (Normal vs Heatwave) vs Humidity (Normal vs High).
-    2. **Conditional Probability:** Calculate $P(\text{Heatwave} \mid \text{High Humidity})$.
-    3. **Bayes' Theorem for IoT Sensor:** Update prior belief of heatwave when a weather sensor alarm triggers:
-       $$P(H \mid S) = \\frac{P(S \mid H) P(H)}{P(S)}$$
-    4. **Heatmap:** 2D density heatmap of Temperature vs Humidity.
-    """)
-    
+    st.write(
+        "**Assigned Role:** Bayesian Inference Specialist | "
+        "**Presentation Slot:** Min 3:15 – 4:30"
+    )
+
+    # Classify days by temperature and humidity.
+    temp_category = df["Max_Temp_C"].apply(
+        lambda t: "Heatwave (>=40°C)" if t >= 40 else "Normal (<40°C)"
+    )
+    hum_category = df["Relative_Humidity_Pct"].apply(
+        lambda h: "High Hum (>60%)" if h > 60 else "Normal Hum (<=60%)"
+    )
+
+    # Joint and marginal frequency table.
+    contingency_table = pd.crosstab(
+        temp_category,
+        hum_category,
+        margins=True
+    )
+
+    st.subheader("Joint & Marginal Frequency Table")
+    st.dataframe(contingency_table, use_container_width=True)
+
+    # Conditional probability: P(Heatwave | High Humidity).
+    st.subheader("Conditional Probability")
+    st.latex(r"P(H\mid HH)=\frac{P(H\cap HH)}{P(HH)}")
+
+    high_humidity_days = int((df["Relative_Humidity_Pct"] > 60).sum())
+    heatwave_high_humidity_days = int(
+        (
+            (df["Max_Temp_C"] >= 40)
+            & (df["Relative_Humidity_Pct"] > 60)
+        ).sum()
+    )
+
+    if high_humidity_days > 0:
+        p_heatwave_given_high_humidity = (
+            heatwave_high_humidity_days / high_humidity_days
+        )
+        st.write(
+            f"{heatwave_high_humidity_days} of {high_humidity_days} "
+            "high-humidity days were heatwave days."
+        )
+        st.metric(
+            "P(Heatwave | High Humidity)",
+            f"{p_heatwave_given_high_humidity:.1%}"
+        )
+    else:
+        st.info("There are no high-humidity days in this dataset.")
+
     st.markdown("---")
-    st.subheader("💻 Member 4 Starter Code Area:")
-    
-    # --- TODO: MEMBER 4 WRITE YOUR CALCULATIONS HERE ---
-    # Example cross-tabulation:
-    temp_category = df['Max_Temp_C'].apply(lambda t: 'Heatwave (>=40°C)' if t >= 40 else 'Normal (<40°C)')
-    hum_category = df['Relative_Humidity_Pct'].apply(lambda h: 'High Hum (>60%)' if h > 60 else 'Normal Hum (<=60%)')
-    contingency_table = pd.crosstab(temp_category, hum_category, margins=True)
-    
-    st.write("**Joint & Marginal Frequency Table:**")
-    st.dataframe(contingency_table)
-    
-    # TODO: Member 4, write your conditional probability and Bayes' Theorem formulas and calculations here!
+
+    # Bayes' theorem: update heatwave probability after a sensor alert.
+    st.subheader("Bayes’ Theorem: Updating a Sensor Alert")
+    st.write(
+        "Adjust the example sensor performance values to see how an alert "
+        "changes the estimated probability of a heatwave."
+    )
+
+    sensitivity = st.slider(
+        "Sensor sensitivity: P(Alert | Heatwave)",
+        min_value=0.50,
+        max_value=1.00,
+        value=0.90,
+        step=0.01
+    )
+    specificity = st.slider(
+        "Sensor specificity: P(No Alert | No Heatwave)",
+        min_value=0.50,
+        max_value=1.00,
+        value=0.90,
+        step=0.01
+    )
+
+    total_days = len(df)
+    heatwave_days = int((df["Max_Temp_C"] >= 40).sum())
+    prior_heatwave = heatwave_days / total_days if total_days else 0.0
+    false_positive_rate = 1 - specificity
+
+    # P(Alert) = P(Alert | H)P(H) + P(Alert | not H)P(not H)
+    p_alert = (
+        sensitivity * prior_heatwave
+        + false_positive_rate * (1 - prior_heatwave)
+    )
+
+    st.latex(
+        r"P(H\mid A)=\frac{P(A\mid H)P(H)}"
+        r"{P(A\mid H)P(H)+P(A\mid \neg H)P(\neg H)}"
+    )
+
+    if p_alert > 0:
+        posterior_heatwave = sensitivity * prior_heatwave / p_alert
+        st.write(f"Prior probability P(Heatwave): {prior_heatwave:.1%}")
+        st.metric(
+            "P(Heatwave | Sensor Alert)",
+            f"{posterior_heatwave:.1%}"
+        )
+    else:
+        st.info("These sensor assumptions give zero probability of an alert.")
+
+    st.caption(
+        "Sensitivity and specificity are example assumptions. "
+        "Use measured sensor performance if your team has it."
+    )
+
+    st.markdown("---")
+
+    # Heat index: apparent temperature from air temperature and humidity.
+    st.subheader("Heat Index (Apparent Temperature)")
+
+    temp_f = df["Max_Temp_C"] * 9 / 5 + 32
+    humidity = df["Relative_Humidity_Pct"]
+
+    heat_index_f = (
+        -42.379
+        + 2.04901523 * temp_f
+        + 10.14333127 * humidity
+        - 0.22475541 * temp_f * humidity
+        - 0.00683783 * temp_f**2
+        - 0.05481717 * humidity**2
+        + 0.00122874 * temp_f**2 * humidity
+        + 0.00085282 * temp_f * humidity**2
+        - 0.00000199 * temp_f**2 * humidity**2
+    )
+
+    # This heat-index approximation is intended for hot conditions.
+    heat_index_c = ((heat_index_f - 32) * 5 / 9).where(temp_f >= 80)
+
+    if heat_index_c.notna().any():
+        st.metric(
+            "Mean Heat Index on hot days",
+            f"{heat_index_c.mean():.1f} °C"
+        )
+        st.caption(
+            "Heat index estimates how hot it feels by combining air "
+            "temperature and humidity."
+        )
+    else:
+        st.info(
+            "The dataset has no days warm enough for this heat-index "
+            "approximation."
+        )
+
+    st.markdown("---")
+
+    # Density heatmap of temperature and humidity.
+    st.subheader("Temperature vs Humidity")
+
+    fig_member4 = px.density_heatmap(
+        df,
+        x="Relative_Humidity_Pct",
+        y="Max_Temp_C",
+        nbinsx=12,
+        nbinsy=12,
+        color_continuous_scale="YlOrRd",
+        labels={
+            "Relative_Humidity_Pct": "Relative Humidity (%)",
+            "Max_Temp_C": "Maximum Temperature (°C)",
+            "count": "Number of days",
+        },
+        title="Daily Temperature and Relative Humidity"
+    )
+
+    st.plotly_chart(fig_member4, use_container_width=True)
 
 
 # ==============================================================================
