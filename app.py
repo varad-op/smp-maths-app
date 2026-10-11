@@ -17,13 +17,36 @@ st.caption("STAT-AI Engineering Challenge: From Data to Decision | Statistical M
 # --- SHARED DATASET INGESTION ---
 # Everyone uses this same dataframe (df) in their tabs!
 DATA_PATH = "data/imd_heatwave_mumbai_maharashtra.csv"
-try:
-    df = pd.read_csv(DATA_PATH)
-    st.sidebar.success(f"✅ Dataset Loaded: {len(df)} daily observations")
-    st.sidebar.dataframe(df[['Date', 'Max_Temp_C', 'Relative_Humidity_Pct']].head(5))
-except Exception as e:
-    st.error(f"Error loading dataset: {e}")
-    st.stop()
+
+# Initialize session state for custom uploaded telemetry
+if "custom_df" not in st.session_state:
+    st.session_state["custom_df"] = None
+if "dataset_label" not in st.session_state:
+    st.session_state["dataset_label"] = "IMD Mumbai & Maharashtra (Default)"
+
+if st.session_state["custom_df"] is not None:
+    df = st.session_state["custom_df"]
+    active_label = st.session_state["dataset_label"]
+    st.sidebar.info(f"📂 **Active Custom Dataset:**\n{active_label}")
+    st.sidebar.success(f"✅ Ingested: {len(df)} daily observations")
+    if st.sidebar.button("🔄 Reset to Default IMD Dataset"):
+        st.session_state["custom_df"] = None
+        st.session_state["dataset_label"] = "IMD Mumbai & Maharashtra (Default)"
+        st.rerun()
+else:
+    try:
+        df = pd.read_csv(DATA_PATH)
+        active_label = "IMD Mumbai & Maharashtra (Default)"
+        st.sidebar.success(f"✅ Dataset Loaded: {len(df)} daily observations")
+    except Exception as e:
+        st.error(f"Error loading dataset: {e}")
+        st.stop()
+
+display_cols = [c for c in ['Date', 'Max_Temp_C', 'Relative_Humidity_Pct'] if c in df.columns]
+if display_cols:
+    st.sidebar.dataframe(df[display_cols].head(5))
+else:
+    st.sidebar.dataframe(df.head(5))
 
 
 # --- 6 DEDICATED TABS FOR THE 6 MEMBERS ---
@@ -669,6 +692,99 @@ with tab6:
     st.caption("STAT-AI Real-Time Command Center | Automated Municipal Hazard Assessment & Resource Allocation")
     st.markdown("---")
 
+    # 0. Custom Municipal Telemetry Ingestion Hub
+    with st.expander("📂 Ingest Custom Meteorological Telemetry (CSV) — Dynamic Platform Recalculation", expanded=(st.session_state.get("custom_df") is not None)):
+        st.markdown("""
+        **Generalizable Multi-District Deployment:**  
+        Upload any regional weather telemetry CSV. Once applied, **all 6 modules across this application** (Tabs 1 to 6) dynamically recalculate using your custom dataset!
+        """)
+
+        up_col1, up_col2 = st.columns([2.5, 1])
+        with up_col1:
+            uploaded_file = st.file_uploader(
+                "Upload Telemetry CSV (requires temperature column):",
+                type=["csv"],
+                key="tab6_custom_csv_uploader",
+                help="Accepts 'Max_Temp_C' or 'Temperature'. Any missing secondary columns are automatically synthesized."
+            )
+        with up_col2:
+            st.write("")
+            st.write("")
+            sample_template = "Date,Max_Temp_C,Min_Temp_C,Relative_Humidity_Pct,Weather_Condition\n2026-05-01,36.5,26.2,62,Normal\n2026-05-02,38.2,27.1,58,Moderate Heat\n2026-05-03,40.5,28.4,49,Heatwave\n2026-05-04,42.8,29.6,41,Severe Heatwave\n2026-05-05,44.1,30.5,35,Severe Heatwave\n2026-05-06,43.2,29.8,38,Severe Heatwave\n2026-05-07,39.4,28.0,52,Moderate Heat\n2026-05-08,37.1,26.8,60,Normal\n"
+            st.download_button(
+                "📥 Download Sample CSV",
+                data=sample_template,
+                file_name="sample_telemetry_dataset.csv",
+                mime="text/csv",
+                help="Download a pre-formatted sample CSV to test dynamic platform recalculation"
+            )
+
+        if uploaded_file is not None:
+            try:
+                raw_custom = pd.read_csv(uploaded_file)
+                raw_custom.columns = [c.strip() for c in raw_custom.columns]
+                
+                # Smart flexible column mapping
+                col_map = {}
+                for c in raw_custom.columns:
+                    c_lower = c.lower().replace(" ", "_")
+                    if c_lower in ['max_temp_c', 'maxtemp', 'max_temp', 'temperature', 'temp', 'max_temperature', 'temp_c']:
+                        col_map[c] = 'Max_Temp_C'
+                    elif c_lower in ['relative_humidity_pct', 'humidity', 'rh', 'rh_pct', 'relative_humidity', 'humidity_pct']:
+                        col_map[c] = 'Relative_Humidity_Pct'
+                    elif c_lower in ['min_temp_c', 'mintemp', 'min_temp', 'min_temperature', 'temp_min']:
+                        col_map[c] = 'Min_Temp_C'
+                    elif c_lower in ['date', 'time', 'timestamp', 'day']:
+                        col_map[c] = 'Date'
+                
+                if col_map:
+                    raw_custom = raw_custom.rename(columns=col_map)
+                
+                if 'Max_Temp_C' not in raw_custom.columns:
+                    st.error("⚠️ The uploaded CSV must contain a 'Max_Temp_C' (or 'Temperature') column.")
+                else:
+                    raw_custom['Max_Temp_C'] = pd.to_numeric(raw_custom['Max_Temp_C'], errors='coerce')
+                    raw_custom = raw_custom.dropna(subset=['Max_Temp_C']).reset_index(drop=True)
+                    
+                    if len(raw_custom) == 0:
+                        st.error("⚠️ The uploaded CSV contains no valid numeric temperature rows.")
+                    else:
+                        # Auto-fill missing standard columns
+                        if 'Date' not in raw_custom.columns:
+                            raw_custom['Date'] = pd.date_range(start='2026-05-01', periods=len(raw_custom)).strftime('%Y-%m-%d')
+                        if 'Relative_Humidity_Pct' not in raw_custom.columns:
+                            raw_custom['Relative_Humidity_Pct'] = 50.0
+                        else:
+                            raw_custom['Relative_Humidity_Pct'] = pd.to_numeric(raw_custom['Relative_Humidity_Pct'], errors='coerce').fillna(50.0)
+                        if 'Min_Temp_C' not in raw_custom.columns:
+                            raw_custom['Min_Temp_C'] = (raw_custom['Max_Temp_C'] - 8.0).round(1)
+                        if 'Weather_Condition' not in raw_custom.columns:
+                            raw_custom['Weather_Condition'] = raw_custom['Max_Temp_C'].apply(
+                                lambda t: 'Severe Heatwave' if t >= 42 else ('Heatwave' if t >= 40 else ('Moderate Heat' if t >= 38 else 'Normal'))
+                            )
+                        
+                        btn_c1, btn_c2 = st.columns([1.5, 2])
+                        with btn_c1:
+                            if st.button("🚀 Apply Custom Dataset to Entire App", type="primary"):
+                                st.session_state["custom_df"] = raw_custom
+                                st.session_state["dataset_label"] = f"{uploaded_file.name} ({len(raw_custom)} rows)"
+                                st.success(f"✅ Ingested {len(raw_custom)} records from {uploaded_file.name}!")
+                                st.rerun()
+                        with btn_c2:
+                            st.caption(f"Preview: {len(raw_custom)} valid rows ready for platform ingestion.")
+
+            except Exception as ex:
+                st.error(f"Error parsing uploaded CSV: {ex}")
+
+        if st.session_state.get("custom_df") is not None:
+            st.info(f"Currently active dataset: **{st.session_state['dataset_label']}**")
+            if st.button("🔄 Reset Back to Default IMD Mumbai Dataset"):
+                st.session_state["custom_df"] = None
+                st.session_state["dataset_label"] = "IMD Mumbai & Maharashtra (Default)"
+                st.rerun()
+
+    st.markdown("---")
+
     # 1. Microclimate Zone & 1-Click Historical Weather Presets
     ctrl_col1, ctrl_col2 = st.columns([1, 2])
     
@@ -687,8 +803,8 @@ with tab6:
         )
 
     # Set default values based on preset
-    latest_temp = float(df['Max_Temp_C'].iloc[-1])
-    latest_rh = float(df['Relative_Humidity_Pct'].iloc[-1])
+    latest_temp = float(df['Max_Temp_C'].dropna().iloc[-1]) if ('Max_Temp_C' in df.columns and len(df['Max_Temp_C'].dropna()) > 0) else 37.5
+    latest_rh = float(df['Relative_Humidity_Pct'].dropna().iloc[-1]) if ('Relative_Humidity_Pct' in df.columns and len(df['Relative_Humidity_Pct'].dropna()) > 0) else 50.0
     
     if preset_choice == "☀️ Normal Summer (34°C, 50%)":
         def_temp, def_rh = 34.0, 50
