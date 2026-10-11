@@ -6,13 +6,13 @@ from modules.time_series_process import compute_autocorrelation, analyze_station
 
 # --- PAGE SETUP ---
 st.set_page_config(
-    page_title="Heatwave Monitoring App | Team Starter Template",
+    page_title="AI Heatwave Early Warning System | STAT-AI",
     page_icon="🌡️",
     layout="wide"
 )
 
 st.title("☀️ AI-Based Heatwave Monitoring and Early Warning System")
-st.caption("Case Study 1 | Statistical Methods and Probability (IA-1) | 6-Member Team Template")
+st.caption("STAT-AI Engineering Challenge: From Data to Decision | Statistical Methods & Probability (IA-1) | IMD Telemetry Analysis")
 
 # --- SHARED DATASET INGESTION ---
 # Everyone uses this same dataframe (df) in their tabs!
