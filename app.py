@@ -25,8 +25,6 @@ except Exception as e:
     st.error(f"Error loading dataset: {e}")
     st.stop()
 
-st.sidebar.markdown("---")
-st.sidebar.info("💡 **Instructions for Team Members:**\nFind your assigned tab below, look at the working example in **Tab 1**, and write your code inside your tab!")
 
 # --- 6 DEDICATED TABS FOR THE 6 MEMBERS ---
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
