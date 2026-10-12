@@ -1,4 +1,4 @@
-﻿# 🎤 6-7 MINUTE SHOWCASE SCRIPT & VIVA PREPARATION GUIDE
+# 🎤 6-7 MINUTE SHOWCASE SCRIPT & VIVA PREPARATION GUIDE
 ## Course: Statistical Methods and Probability (IA-1) | Somaiya Vidyavihar University
 ### Case Study 1: AI-Based Heatwave Monitoring and Early Warning System
 
@@ -25,20 +25,20 @@
 - **Action on Screen:** Click on **Tab 3: "2. Descriptive Stats (M2)"**.
 - **Script:**
   > *"Thank you Member 1. I am Member 2, leading Descriptive Statistics and Measures of Dispersion.  
-  > As shown on the dashboard, our sample mean maximum temperature is $\bar{x} = 38.54^\circ\text{C}$, with a median of $38.40^\circ\text{C}$. Grouped mean calculated from class intervals is $38.23^\circ\text{C}$, demonstrating less than 0.8% grouping error.  
-  > To measure temperature volatility, we calculated sample variance with Bessel's correction using $N-1 = 64$ degrees of freedom, yielding $s^2 = 9.95\ (^\circ\text{C})^2$ and standard deviation $s = 3.15^\circ\text{C}$.  
-  > Most importantly, our Coefficient of Variation is $CV = \frac{s}{\bar{x}} \times 100\% = 8.18\%$. While an 8% CV shows relative baseline stability, our standard deviation of $3.15^\circ\text{C}$ proves that a single $2\sigma$ departure pushes regional temperatures beyond $44.8^\circ\text{C}$, causing severe heat emergencies. Member 3 will now explain the probability modeling."*
+  > As shown on the dashboard, our sample mean maximum temperature is $\bar{x} = 37.53^\circ\text{C}$, with a median of $37.30^\circ\text{C}$. Grouped mean calculated from class intervals is $37.63^\circ\text{C}$, demonstrating less than 0.3% grouping error.  
+  > To measure temperature volatility, we calculated sample variance with Bessel's correction using $N-1 = 64$ degrees of freedom, yielding $s^2 = 7.44\ (^\circ\text{C})^2$ and standard deviation $s = 2.73^\circ\text{C}$.  
+  > Most importantly, our Coefficient of Variation is $CV = \frac{s}{\bar{x}} \times 100\% = 7.27\%$. While a 7.27% CV indicates strong baseline consistency, our standard deviation of $2.73^\circ\text{C}$ proves that a single $2\sigma$ departure pushes regional temperatures beyond $43.0^\circ\text{C}$, causing severe heat emergencies. Member 3 will now explain the probability modeling."*
 
 ---
 
 ### Member 3: Probability & Normal Distribution Specialist (Min 2:00 – 3:15)
-- **Action on Screen:** Click on **Tab 4: "3. Normal Distribution (M3)"**. Move the interactive threshold slider to $40.0^\circ\text{C}$ and $42.0^\circ\text{C}$.
+- **Action on Screen:** Click on **Tab 3: "Normal Distribution"**. Move the interactive threshold slider to $40.0^\circ\text{C}$ and $42.0^\circ\text{C}$.
 - **Script:**
   > *"I am Member 3, responsible for Extreme Temperature Probability and Gaussian Modeling.  
-  > We fitted a Normal Distribution $\mathcal{N}(\mu = 38.54, \sigma = 3.15)$ to the daily maximum temperatures.  
+  > We fitted a Normal Distribution $\mathcal{N}(\mu = 37.53, \sigma = 2.73)$ to the daily maximum temperatures.  
   > To quantify disaster risk, we transform temperature into the Standard Normal Variable $Z = \frac{X - \mu}{\sigma}$.  
-  > For the IMD Heatwave threshold of $40^\circ\text{C}$, the $Z$-score is $+0.46$, giving an exceedance probability $P(X \ge 40^\circ\text{C}) = 1 - \Phi(0.46) = 32.15\%$. That means approximately one in every three summer days is statistically at risk.  
-  > For the Severe Heatwave threshold of $42^\circ\text{C}$, $Z = +1.10$, yielding $P(X \ge 42^\circ\text{C}) = 13.60\%$.  
+  > For the IMD Heatwave threshold of $40^\circ\text{C}$, the $Z$-score is $+0.91$, giving an exceedance probability $P(X \ge 40^\circ\text{C}) = 1 - \Phi(0.91) = 18.27\%$.  
+  > For the Severe Heatwave threshold of $42^\circ\text{C}$, $Z = +1.64$, yielding $P(X \ge 42^\circ\text{C}) = 5.08\%$.  
   > Notice on our interactive graph how the shaded critical right-tail area dynamically shifts as I adjust the threshold slider. Now Member 4 will address conditional risk and sensor reliability."*
 
 ---

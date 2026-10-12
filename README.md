@@ -1,4 +1,4 @@
-﻿# ☀️ AI-Based Heatwave Monitoring and Early Warning System
+# ☀️ AI-Based Heatwave Monitoring and Early Warning System
 > **Academic Year 2026–27 | S.Y. B.Tech Engineering**  
 > **Course:** Statistical Methods and Probability (SMP) | **Internal Assessment – IA 1**  
 > **Theme:** STAT-AI Engineering Challenge — *From Data to Decision*  
@@ -19,7 +19,7 @@ $$\textbf{Input/Data} \longrightarrow \textbf{Statistical Method} \longrightarro
 ```mermaid
 flowchart LR
     A[IMD Weather Telemetry\nN=65 Daily Observations] --> B[Data Hygiene & IQR Outliers\nClass Intervals & Ogive Curves]
-    B --> C[Descriptive Dispersion\nMean, Variance, CV = 8.18%]
+    B --> C[Descriptive Dispersion\nMean, Variance, CV = 7.27%]
     C --> D[Gaussian Fitting & Z-Scores\nP(T ≥ 40°C) & P(T ≥ 42°C)]
     D --> E[Bayesian Inference\nP(Heatwave | IoT Sensor Alert)]
     E --> F[Random Process & ACF\nThermal Memory Lag-1 = 0.77]
