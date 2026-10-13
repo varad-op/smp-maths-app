@@ -215,9 +215,9 @@ with tab1:
 # TAB 2: DESCRIPTIVE STATISTICS & DISPERSION
 # ==============================================================================
 with tab2:
-   
+
     st.header("📐 Descriptive Statistics & Measures of Dispersion")
-    
+
     st.markdown("""
     This section summarizes the daily maximum temperature data using measures of
     central tendency and dispersion. Missing or non-numeric temperature values are
@@ -296,7 +296,8 @@ with tab2:
             st.latex(r"CV = \frac{s}{|\bar{x}|} \times 100\%")
             if sample_mean != 0:
                 st.latex(rf"CV = \frac{{{sample_std:.2f}}}{{|{sample_mean:.2f}|}} \times 100\% = {cv_val:.2f}\%")
-                        st.markdown("---")
+
+        st.markdown("---")
         st.subheader("Grouped Data (7 classes from Tab 1)")
         lows = np.asarray(edges[:-1], dtype=float)
         ups = np.asarray(edges[1:], dtype=float)
@@ -344,8 +345,6 @@ with tab2:
         if n > 1:
             st.write(f"- The sample standard deviation is **{sample_std:.2f} °C**, describing the typical spread around the mean.")
             st.write(f"- The coefficient of variation is **{cv_val:.2f}%**, which expresses standard deviation relative to the mean.")
-            
-
 
 
 
