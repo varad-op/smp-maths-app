@@ -296,6 +296,34 @@ with tab2:
             st.latex(r"CV = \frac{s}{|\bar{x}|} \times 100\%")
             if sample_mean != 0:
                 st.latex(rf"CV = \frac{{{sample_std:.2f}}}{{|{sample_mean:.2f}|}} \times 100\% = {cv_val:.2f}\%")
+                        st.markdown("---")
+        st.subheader("Grouped Data (7 classes from Tab 1)")
+        lows = np.asarray(edges[:-1], dtype=float)
+        ups = np.asarray(edges[1:], dtype=float)
+        freq = np.asarray(frequencies)
+        mids = (lows + ups) / 2
+        cum = np.cumsum(freq)
+        N_g = int(freq.sum())
+        h_g = float(ups[0] - lows[0])
+
+        g_mean = float((freq * mids).sum() / N_g)
+        mi = int(np.argmax(cum >= N_g / 2))
+        cf_prev = int(cum[mi - 1]) if mi > 0 else 0
+        g_median = float(lows[mi] + ((N_g / 2 - cf_prev) / freq[mi]) * h_g)
+        j = int(np.argmax(freq))
+        f0 = int(freq[j - 1]) if j > 0 else 0
+        f2 = int(freq[j + 1]) if j < len(freq) - 1 else 0
+        den = 2 * int(freq[j]) - f0 - f2
+        g_mode = float(lows[j] + ((int(freq[j]) - f0) / den) * h_g) if den != 0 else float(lows[j])
+
+        g1, g2, g3 = st.columns(3)
+        g1.metric("Grouped Mean", f"{g_mean:.2f} °C")
+        g2.metric("Grouped Median", f"{g_median:.2f} °C")
+        g3.metric("Grouped Mode", f"{g_mode:.2f} °C")
+
+        st.latex(rf"\bar{{x}}_{{g}} = \frac{{\sum f_i m_i}}{{\sum f_i}} = \frac{{{(freq * mids).sum():.2f}}}{{{N_g}}} = {g_mean:.2f}^\circ C")
+        st.latex(rf"M_d = L + \left[\frac{{N/2 - cf}}{{f}}\right] h = {lows[mi]:.2f} + \left[\frac{{{N_g/2:.1f} - {cf_prev}}}{{{int(freq[mi])}}}\right]({h_g:.2f}) = {g_median:.2f}^\circ C")
+        st.latex(rf"M_o = L + \left[\frac{{f_1 - f_0}}{{2f_1 - f_0 - f_2}}\right] h = {lows[j]:.2f} + \left[\frac{{{int(freq[j])} - {f0}}}{{{den}}}\right]({h_g:.2f}) = {g_mode:.2f}^\circ C")
 
         st.markdown("---")
         st.subheader("4. Box-and-Whisker Plot")
@@ -316,6 +344,7 @@ with tab2:
         if n > 1:
             st.write(f"- The sample standard deviation is **{sample_std:.2f} °C**, describing the typical spread around the mean.")
             st.write(f"- The coefficient of variation is **{cv_val:.2f}%**, which expresses standard deviation relative to the mean.")
+            
 
 
 
